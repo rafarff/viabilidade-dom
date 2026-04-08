@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM - Analisador de Aquisição de Terrenos</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bk: #1a1a1a;
+      --gd: #4D4D4D;
+      --gm: #8C8C8C;
+      --gl: #F2F2F2;
+      --wh: #FFFFFF;
+      --au: #C9A84C;
+      --al: #E8D5A3;
+      --ad: #8B6914;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bk);
+      color: var(--wh);
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 380px;
+      background-color: var(--gd);
+      overflow-y: auto;
+      padding: 20px;
+      border-right: 2px solid var(--au);
+    }
+
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background-color: var(--bk);
+    }
+
+    header {
+      background-color: var(--gd);
+      color: var(--wh);
+      padding: 20px;
+      margin: -20px -20px 20px -20px;
+      text-align: center;
+      border-bottom: 3px solid var(--au);
+    }
+
+    header h1 {
+      font-size: 24px;
+      margin-bottom: 5px;
+      letter-spacing: 1px;
+    }
+
+    header p {
+      font-size: 13px;
+      color: var(--al);
+    }
+
+    .section {
+      margin-bottom: 25px;
+    }
+
+    .section-title {
+      background-color: var(--gd);
+      color: var(--al);
+      padding: 12px 15px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 15px;
+      border-left: 4px solid var(--au);
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title.collapsible::before {
+      content: '▶';
+      display: inline-block;
+      transition: transform 0.3s;
+      font-size: 10px;
+    }
+
+    .section-title.collapsible.expanded::before {
+      transform: rotate(90deg);
+    }
+
+    .collapsible-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .collapsible-content.expanded {
+      max-height: 2000px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--al);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--gm);
+      background-color: var(--gl);
+      color: var(--bk);
+      font-size: 13px;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--au);
+      background-color: var(--wh);
+      box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.2);
+    }
+
+    input.highlight,
+    input.highlight:focus {
+      background-color: var(--al);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background-color: var(--au);
+      color: var(--bk);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background-color: var(--al);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(201, 168, 76, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+
+    @media (max-width: 1400px) {
+      .summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .card {
+      background: linear-gradient(135deg, var(--gm) 0%, var(--gd) 100%);
+      border-left: 4px solid var(--au);
+      padding: 15px;
+      border-radius: 3px;
+      text-align: center;
+    }
+
+    .card.good {
+      border-left-color: #4CAF50;
+      background: linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(76, 175, 80, 0.1) 100%);
+    }
+
+    .card.warning {
+      border-left-color: #FF9800;
+      background: linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 152, 0, 0.1) 100%);
+    }
+
+    .card.bad {
+      border-left-color: #F44336;
+      background: linear-gradient(135deg, rgba(244, 67, 54, 0.2) 0%, rgba(244, 67, 54, 0.1) 100%);
+    }
+
+    .card-label {
+      font-size: 11px;
+      color: var(--al);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 8px;
+    }
+
+    .card-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--au);
+    }
+
+    .card.good .card-value {
+      color: #4CAF50;
+    }
+
+    .card.warning .card-value {
+      color: #FF9800;
+    }
+
+    .card.bad .card-value {
+      color: #F44336;
+    }
+
+    .matrix-container {
+      overflow-x: auto;
+      margin-bottom: 25px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--gm);
+      font-size: 12px;
+    }
+
+    th {
+      background-color: var(--gd);
+      color: var(--al);
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      border-bottom: 2px solid var(--au);
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--gd);
+      color: var(--wh);
+    }
+
+    tr:hover td {
+      background-color: rgba(201, 168, 76, 0.1);
+    }
+
+    .cell-good {
+      background-color: rgba(76, 175, 80, 0.3);
+      color: #4CAF50;
+      font-weight: 600;
+    }
+
+    .cell-warning {
+      background-color: rgba(255, 152, 0, 0.3);
+      color: #E68A00;
+      font-weight: 600;
+    }
+
+    .cell-bad {
+      background-color: rgba(244, 67, 54, 0.3);
+      color: #F44336;
+      font-weight: 600;
+    }
+
+    .reverse-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .reverse-card {
+      background: linear-gradient(135deg, var(--gm) 0%, var(--gd) 100%);
+      border: 2px solid var(--au);
+      padding: 20px;
+      border-radius: 3px;
+      text-align: center;
+    }
+
+    .reverse-card h4 {
+      font-size: 13px;
+      color: var(--al);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .reverse-card .value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--au);
+      margin-bottom: 8px;
+    }
+
+    .reverse-card .subtitle {
+      font-size: 11px;
+      color: var(--gm);
+      font-style: italic;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      border-top: 1px solid var(--gd);
+      color: var(--gm);
+      font-size: 11px;
+      margin-top: 40px;
+    }
+
+    .loader {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: var(--au);
+    }
+
+    .loader.active {
+      display: block;
+    }
+
+    .payment-grid {
+      display: grid;
+      gap: 2px;
+      background-color: var(--gd);
+      padding: 2px;
+      margin-bottom: 25px;
+    }
+
+    .payment-grid-header {
+      display: grid;
+      grid-template-columns: 120px repeat(6, 1fr);
+      gap: 2px;
+      margin-bottom: 2px;
+    }
+
+    .payment-grid-row {
+      display: grid;
+      grid-template-columns: 120px repeat(6, 1fr);
+      gap: 2px;
+    }
+
+    .payment-cell {
+      background-color: var(--gm);
+      padding: 10px 8px;
+      text-align: center;
+      font-size: 12px;
+      min-height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .payment-cell.header {
+      background-color: var(--gd);
+      color: var(--al);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .payment-cell.label {
+      background-color: var(--gd);
+      color: var(--al);
+      font-weight: 600;
+      justify-content: center;
+    }
+
+    .payment-cell.good {
+      background-color: rgba(76, 175, 80, 0.4);
+      color: #4CAF50;
+      font-weight: 600;
+    }
+
+    .payment-cell.warning {
+      background-color: rgba(255, 152, 0, 0.4);
+      color: #E68A00;
+      font-weight: 600;
+    }
+
+    .payment-cell.bad {
+      background-color: rgba(244, 67, 54, 0.4);
+      color: #F44336;
+      font-weight: 600;
+    }
+
+    .ranking-table {
+      width: 100%;
+      font-size: 11px;
+    }
+
+    .ranking-table th {
+      padding: 10px 8px;
+    }
+
+    .ranking-table td {
+      padding: 8px;
+      font-size: 11px;
+    }
+
+    .verdict-approved {
+      color: #4CAF50;
+      font-weight: 700;
+    }
+
+    .verdict-rejected {
+      color: #F44336;
+      font-weight: 700;
+    }
+
+    .load-dropdown-group {
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <header>
+        <h1>DOM INCORPORAÇÃO</h1>
+        <p>Analisador de Aquisição de Terrenos</p>
+      </header>
+
+      <!-- TERRENO EM ANÁLISE -->
+      <div class="section">
+        <div class="section-title">Terreno em Análise</div>
+        <div class="form-group">
+          <label for="terreno-nome">Nome do Terreno</label>
+          <input type="text" id="terreno-nome" placeholder="Ex: Jardim Europa">
+        </div>
+        <div class="button-group">
+          <button onclick="salvarTerreno()">Salvar</button>
+          <button onclick="apagarTerreno()">Apagar</button>
+        </div>
+        <div class="load-dropdown-group">
+          <label for="terrenos-dropdown">Carregar Terreno</label>
+          <select id="terrenos-dropdown" onchange="carregarTerreno()">
+            <option value="">-- Selecione um terreno --</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- DADOS DO EMPREENDIMENTO -->
+      <div class="section">
+        <div class="section-title">Dados do Empreendimento</div>
+        <div class="form-group">
+          <label for="qtde-uh">Qtde UH</label>
+          <input type="number" id="qtde-uh" value="0" min="0" step="1">
+        </div>
+        <div class="form-group">
+          <label for="area-uh">Área Privativa Média (m²)</label>
+          <input type="number" id="area-uh" value="100" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label for="area-vendavel">Área Vendável Total (m²)</label>
+          <input type="number" id="area-vendavel" class="highlight" value="5000" min="0" step="1">
+        </div>
+      </div>
+
+      <!-- VALOR DO TERRENO -->
+      <div class="section">
+        <div class="section-title">Valor do Terreno</div>
+        <div class="form-group">
+          <label for="custo-terreno">Valor Pedido (R$)</label>
+          <input type="number" id="custo-terreno" value="3000000" min="0" step="100000">
+        </div>
+      </div>
+
+      <!-- HIPÓTESE DE PRODUTO -->
+      <div class="section">
+        <div class="section-title">Hipótese de Produto</div>
+        <div class="form-group">
+          <label for="preco-m2">Preço Venda (R$/m²)</label>
+          <input type="number" id="preco-m2" value="9000" min="0" step="100">
+        </div>
+        <div class="form-group">
+          <label for="custo-m2">Custo Construção (R$/m²)</label>
+          <input type="number" id="custo-m2" value="4500" min="0" step="100">
+        </div>
+      </div>
+
+      <!-- PREMISSAS PADRÃO -->
+      <div class="section">
+        <div class="section-title collapsible" onclick="toggleCollapsible(this)">Premissas Padrão</div>
+        <div class="collapsible-content">
+          <div class="form-group">
+            <label for="comissao">Comissão Vendas (%)</label>
+            <input type="number" id="comissao" value="5" min="0" step="0.1">
+          </div>
+          <div class="form-group">
+            <label for="impostos">Impostos Receita Bruta (%)</label>
+            <input type="number" id="impostos" value="5" min="0" step="0.1">
+          </div>
+          <div class="form-group">
+            <label for="indiretos">Indiretos Adm Obra (%)</label>
+            <input type="number" id="indiretos" value="11" min="0" step="0.1">
+          </div>
+          <div class="form-group">
+            <label for="mes-lanc">Mês Lançamento</label>
+            <input type="number" id="mes-lanc" value="18" min="0" step="1">
+          </div>
+          <div class="form-group">
+            <label for="prazo-obra">Prazo Obra (meses)</label>
+            <input type="number" id="prazo-obra" value="36" min="1" step="1">
+          </div>
+          <div class="form-group">
+            <label for="prazo-vendas">Prazo Vendas (meses)</label>
+            <input type="number" id="prazo-vendas" value="12" min="1" step="1">
+          </div>
+          <div class="form-group">
+            <label for="pct-4m">% Vendido em 4 Meses</label>
+            <input type="number" id="pct-4m" value="40" min="0" max="100" step="1">
+          </div>
+          <div class="form-group">
+            <label for="pre-lanc-meses">Pré-obra (meses)</label>
+            <input type="number" id="pre-lanc-meses" value="24" min="0" step="1">
+          </div>
+          <div class="form-group">
+            <label for="pre-lanc-pct">Legalização e Mkt (% VGV)</label>
+            <input type="number" id="pre-lanc-pct" value="2" min="0" step="0.1">
+          </div>
+          <div class="form-group">
+            <label for="pag-entrada">Entrada (%)</label>
+            <input type="number" id="pag-entrada" value="12.5" min="0" step="0.1">
+          </div>
+          <div class="form-group">
+            <label for="pag-mensais">Mensais (%)</label>
+            <input type="number" id="pag-mensais" value="12.5" min="0" step="0.1">
+          </div>
+          <div class="form-group">
+            <label for="pag-anuais">Anuais (%)</label>
+            <input type="number" id="pag-anuais" value="15" min="0" step="0.1">
+          </div>
+          <div class="form-group">
+            <label for="pag-chaves">Chaves/Repasse (%)</label>
+            <input type="number" id="pag-chaves" value="60" min="0" step="0.1">
+          </div>
+          <div class="form-group">
+            <label for="taxa-fin">Taxa Financiamento (% a.m.)</label>
+            <input type="number" id="taxa-fin" value="1.95" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label for="pct-fin">% Máx. Financiável</label>
+            <input type="number" id="pct-fin" value="70" min="0" max="100" step="1">
+          </div>
+          <div class="form-group">
+            <label for="pct-vendas-fin">% Vendas p/ Liberar Financ.</label>
+            <input type="number" id="pct-vendas-fin" value="40" min="0" max="100" step="1">
+          </div>
+        </div>
+      </div>
+
+      <!-- MODALIDADE MISTA -->
+      <div class="section">
+        <div class="section-title">Modalidade Mista</div>
+        <div class="form-group">
+          <label for="mista-din-pct">% Dinheiro (do valor terreno)</label>
+          <input type="number" id="mista-din-pct" value="25" min="0" max="100" step="5">
+        </div>
+        <div class="form-group">
+          <label for="mista-perm-pct">% Permuta (do VGV)</label>
+          <input type="number" id="mista-perm-pct" value="10" min="0" max="50" step="1">
+        </div>
+      </div>
+
+      <!-- META DE RESULTADO -->
+      <div class="section">
+        <div class="section-title">Meta de Resultado</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="form-group">
+            <label for="margem-alvo">Margem Alvo (%)</label>
+            <input type="number" id="margem-alvo" value="20" min="0" step="0.5">
+          </div>
+          <div class="form-group">
+            <label for="margem-min">Margem Mínima (%)</label>
+            <input type="number" id="margem-min" value="15" min="0" step="0.5">
+          </div>
+          <div class="form-group">
+            <label for="tir-alvo">TIR Alvo Anual (%)</label>
+            <input type="number" id="tir-alvo" value="25" min="0" step="0.5">
+          </div>
+          <div class="form-group">
+            <label for="tir-min">TIR Mínima Anual (%)</label>
+            <input type="number" id="tir-min" value="20" min="0" step="0.5">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN AREA -->
+    <div class="main">
+      <!-- RESUMO RÁPIDO -->
+      <div>
+        <h2 style="color: var(--au); font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px;">
+          Resumo Rápido — Compra 100%
+        </h2>
+        <div class="summary-cards" id="summary-cards"></div>
+      </div>
+
+      <!-- MATRIZ DE AQUISIÇÃO -->
+      <div>
+        <h2 style="color: var(--au); font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px;">
+          Matriz de Aquisição
+        </h2>
+        <div class="matrix-container">
+          <table id="matriz-aquisicao"></table>
+        </div>
+      </div>
+
+      <!-- SENSIBILIDADE: COMPRA 100% -->
+      <div>
+        <h2 style="color: var(--au); font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px;">
+          Sensibilidade — Compra 100% (Variação do Valor do Terreno)
+        </h2>
+        <div class="matrix-container">
+          <table id="sensib-compra" style="font-size:11px"></table>
+        </div>
+      </div>
+
+      <!-- SENSIBILIDADE: PERMUTA -->
+      <div>
+        <h2 style="color: var(--au); font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px;">
+          Sensibilidade — Permuta (Variação do % de Permuta)
+        </h2>
+        <div class="matrix-container">
+          <table id="sensib-permuta" style="font-size:11px"></table>
+        </div>
+      </div>
+
+      <!-- MATRIZ DE PAGAMENTO -->
+      <div>
+        <h2 style="color: var(--au); font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px;">
+          Matriz de Pagamento — Compra em Dinheiro (TIR c/ Fin.)
+        </h2>
+        <div class="payment-grid" id="payment-grid"></div>
+      </div>
+
+      <!-- ANÁLISE REVERSA -->
+      <div>
+        <h2 style="color: var(--au); font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px;">
+          Análise Reversa — Valor Máximo do Terreno
+        </h2>
+        <div class="reverse-cards" id="reverse-cards"></div>
+      </div>
+
+      <!-- RANKING DE PROSPECÇÕES -->
+      <div>
+        <h2 style="color: var(--au); font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px;">
+          Ranking de Prospecções
+        </h2>
+        <div class="matrix-container">
+          <table class="ranking-table" id="ranking-table"></table>
+        </div>
+      </div>
+
+      <footer>DOM Incorporação — Analisador de Aquisição v1.0</footer>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================================
+    // SIMULATION ENGINE
+    // ============================================================================
+
+    function simulate(p) {
+      const area = p.area_vendavel > 0 ? p.area_vendavel : (p.qtde_uh * p.area_uh);
+      const uhEfetivo = p.qtde_uh > 0 ? p.qtde_uh : (p.area_uh > 0 ? Math.round(area / p.area_uh) : Math.round(area / 100));
+      const vgvBruto = area * p.preco_m2;
+
+      const mod = p.mod_terreno || 'compra';
+      let custoTerrenoCaixa = 0, permutaVGV = 0, entTerr = 0, parcTerr = 0;
+
+      if (mod === 'compra') {
+        custoTerrenoCaixa = p.custo_terreno;
+        entTerr = (p.entrada_terreno || 50) / 100;
+        parcTerr = p.parcelas_terreno || 6;
+      } else if (mod === 'permuta') {
+        permutaVGV = vgvBruto * (p.permuta_pct || 15) / 100;
+        custoTerrenoCaixa = 0;
+      } else if (mod === 'mista') {
+        custoTerrenoCaixa = p.mista_dinheiro || 0;
+        entTerr = (p.mista_entrada || 50) / 100;
+        parcTerr = p.mista_parcelas || 6;
+        permutaVGV = vgvBruto * (p.mista_permuta_pct || 8) / 100;
+      }
+
+      const vgv = vgvBruto - permutaVGV;
+      const custoConstr = area * p.custo_m2;
+      const custoInd = custoConstr * p.indiretos / 100;
+      const custoPreLanc = vgvBruto * p.pre_lanc_pct / 100;
+      const comissaoTotal = vgv * p.comissao / 100;
+      const impostosTotal = vgv * p.impostos / 100;
+      const recLiquida = vgv - comissaoTotal - impostosTotal;
+      const custoTotal = custoTerrenoCaixa + custoConstr + custoInd + custoPreLanc;
+      const lucroEst = recLiquida - custoTotal;
+      const margemEst = vgvBruto > 0 ? lucroEst / vgvBruto : 0;
+
+      const MONTHS = 120;
+      const ml = p.mes_lanc, po = p.prazo_obra, pv = p.prazo_vendas;
+      const j4 = p.pct_4m / 100, ke = p.pag_entrada / 100, km = p.pag_mensais / 100, ka = p.pag_anuais / 100;
+      const taxFin = p.taxa_fin / 100, pctFin = p.pct_fin / 100, pctVendMin = p.pct_vendas_fin / 100;
+      const limCredito = (custoConstr + custoInd) * pctFin;
+      const preM = p.pre_lanc_meses;
+
+      let sCurveSum = 0;
+      for (let i = 0; i < po; i++) sCurveSum += 6 * ((i + 0.5) / po) * (1 - (i + 0.5) / po);
+
+      const uhAcum = new Float64Array(MONTHS + 1);
+      for (let m = 0; m <= MONTHS; m++) {
+        if (m < ml) {
+          uhAcum[m] = 0;
+        } else {
+          const t = m - ml + 1;
+          const fast = uhEfetivo * j4 * Math.min(t, 4) / 4;
+          const slow = uhEfetivo * (1 - j4) * Math.max(0, Math.min(t - 4, pv - 4)) / Math.max(1, pv - 4);
+          uhAcum[m] = Math.min(uhEfetivo, Math.round((fast + slow) * 10) / 10);
+        }
+      }
+
+      const terreno = new Float64Array(MONTHS + 1);
+      const preLanc = new Float64Array(MONTHS + 1);
+      const obra = new Float64Array(MONTHS + 1);
+      const comissao = new Float64Array(MONTHS + 1);
+      const imposto = new Float64Array(MONTHS + 1);
+      const entradas = new Float64Array(MONTHS + 1);
+      const mensais = new Float64Array(MONTHS + 1);
+      const anuais = new Float64Array(MONTHS + 1);
+      const chaves = new Float64Array(MONTHS + 1);
+      const totalSaidas = new Float64Array(MONTHS + 1);
+      const totalEntradas = new Float64Array(MONTHS + 1);
+      const fluxoLiq = new Float64Array(MONTHS + 1);
+      const acumEq = new Float64Array(MONTHS + 1);
+      const juros = new Float64Array(MONTHS + 1);
+      const saque = new Float64Array(MONTHS + 1);
+      const amort = new Float64Array(MONTHS + 1);
+      const saldoDev = new Float64Array(MONTHS + 1);
+      const fluxoFin = new Float64Array(MONTHS + 1);
+      const acumFin = new Float64Array(MONTHS + 1);
+
+      const ticket = vgv / (uhEfetivo || 1);
+
+      for (let m = 0; m <= MONTHS; m++) {
+        if (custoTerrenoCaixa > 0) {
+          if (m === 0) terreno[m] = -custoTerrenoCaixa * entTerr;
+          else if (m >= 1 && m <= parcTerr && parcTerr > 0) terreno[m] = -custoTerrenoCaixa * (1 - entTerr) / parcTerr;
+        }
+
+        const preStart = Math.max(0, ml - preM);
+        const preDur = Math.min(preM, ml);
+        if (m >= preStart && m < ml && preDur > 0) preLanc[m] = -custoPreLanc / preDur;
+
+        if (m >= ml && m < ml + po) {
+          const t = (m - ml + 0.5) / po;
+          obra[m] = -(custoConstr + custoInd) * 6 * t * (1 - t) / sCurveSum;
+        }
+
+        const uhNew = m === 0 ? 0 : uhAcum[m] - uhAcum[m - 1];
+        comissao[m] = -uhNew * ticket * (p.comissao / 100);
+        entradas[m] = uhNew * ticket * ke;
+
+        let mensTot = 0;
+        for (let sv = ml; sv < ml + pv && sv <= m; sv++) {
+          const uhSv = (sv === 0 ? 0 : uhAcum[sv] - uhAcum[sv - 1]);
+          if (uhSv <= 0) continue;
+          const mesesMens = Math.max(1, po - (sv - ml));
+          if (m > sv && m <= sv + mesesMens && m < ml + po) {
+            mensTot += uhSv * ticket * km / mesesMens;
+          }
+        }
+        mensais[m] = mensTot;
+
+        let anTot = 0;
+        for (let sv = ml; sv < ml + pv && sv <= m; sv++) {
+          const uhSv = (sv === 0 ? 0 : uhAcum[sv] - uhAcum[sv - 1]);
+          if (uhSv <= 0) continue;
+          const diff = m - sv;
+          if (diff > 0 && diff % 12 === 0 && m < ml + po) {
+            anTot += uhSv * ticket * (ka / 3);
+          }
+        }
+        anuais[m] = anTot;
+
+        if (m === ml + po) {
+          let chvTot = 0;
+          for (let sv = ml; sv < ml + pv && sv <= m; sv++) {
+            const uhSv = (sv === 0 ? 0 : uhAcum[sv] - uhAcum[sv - 1]);
+            if (uhSv <= 0) continue;
+            const anuaisCount = Math.floor((ml + po - sv - 1) / 12);
+            const residual = 1 - ke - km - anuaisCount * (ka / 3);
+            chvTot += uhSv * ticket * Math.max(0, residual);
+          }
+          chaves[m] = chvTot;
+        }
+
+        totalEntradas[m] = entradas[m] + mensais[m] + anuais[m] + chaves[m];
+        imposto[m] = -totalEntradas[m] * (p.impostos / 100);
+        totalSaidas[m] = terreno[m] + preLanc[m] + obra[m] + comissao[m] + imposto[m];
+        fluxoLiq[m] = totalEntradas[m] + totalSaidas[m];
+        acumEq[m] = (m === 0 ? fluxoLiq[0] : acumEq[m - 1] + fluxoLiq[m]);
+
+        const prevSD = m === 0 ? 0 : saldoDev[m - 1];
+        juros[m] = -prevSD * taxFin;
+        const netAfterJuros = fluxoLiq[m] + juros[m];
+        if (netAfterJuros < 0 && uhAcum[m] >= pctVendMin * uhEfetivo) {
+          saque[m] = Math.min(-netAfterJuros, Math.max(0, limCredito - prevSD));
+        }
+        if (netAfterJuros > 0) {
+          amort[m] = -Math.min(netAfterJuros, prevSD);
+        }
+        saldoDev[m] = prevSD + saque[m] + amort[m];
+        fluxoFin[m] = fluxoLiq[m] + juros[m] + saque[m] + amort[m];
+        acumFin[m] = (m === 0 ? fluxoFin[0] : acumFin[m - 1] + fluxoFin[m]);
+      }
+
+      const totalJuros = juros.reduce((s, v) => s + v, 0);
+      const lucroEquity = acumEq[MONTHS];
+      const lucroFin = acumFin[MONTHS];
+      const margemEquity = vgvBruto > 0 ? lucroEquity / vgvBruto : 0;
+      const margemFin = vgvBruto > 0 ? lucroFin / vgvBruto : 0;
+
+      function calcIRR(flows, guess) {
+        let r = guess || 0.01;
+        for (let iter = 0; iter < 200; iter++) {
+          let npv = 0, dnpv = 0;
+          for (let i = 0; i < flows.length; i++) {
+            if (flows[i] === 0) continue;
+            const d = Math.pow(1 + r, i);
+            npv += flows[i] / d;
+            dnpv -= i * flows[i] / (d * (1 + r));
+          }
+          if (Math.abs(dnpv) < 1e-15) break;
+          const nr = r - npv / dnpv;
+          if (Math.abs(nr - r) < 1e-10) { r = nr; break; }
+          r = nr;
+          if (r < -0.5) r = -0.49;
+          if (r > 2) r = 1.99;
+        }
+        return r;
+      }
+
+      function trimFlows(arr) {
+        let last = arr.length - 1;
+        while (last > 0 && Math.abs(arr[last]) < 0.01) last--;
+        return Array.from(arr).slice(0, last + 1);
+      }
+
+      const irrEqM = calcIRR(trimFlows(fluxoLiq), 0.015);
+      const irrFinM = calcIRR(trimFlows(fluxoFin), 0.015);
+      const tirEqAA = Math.pow(1 + irrEqM, 12) - 1;
+      const tirFinAA = Math.pow(1 + irrFinM, 12) - 1;
+
+      let paybackEq = '-', paybackFin = '-';
+      for (let m = 1; m <= MONTHS; m++) { if (acumEq[m] > 0 && acumEq[m - 1] <= 0) { paybackEq = m; break; } }
+      for (let m = 1; m <= MONTHS; m++) { if (acumFin[m] > 0 && acumFin[m - 1] <= 0) { paybackFin = m; break; } }
+
+      let expMaxEq = 0, expMaxFin = 0;
+      for (let m = 0; m <= MONTHS; m++) {
+        if (acumEq[m] < expMaxEq) expMaxEq = acumEq[m];
+        if (acumFin[m] < expMaxFin) expMaxFin = acumFin[m];
+      }
+
+      const equityInvestido = custoTerrenoCaixa + (custoConstr + custoInd) * (1 - pctFin) + custoPreLanc;
+
+      return {
+        area, vgv, vgvBruto, custoConstr, custoInd, custoPreLanc, comissaoTotal, impostosTotal,
+        recLiquida, custoTotal, custoTerrenoCaixa, permutaVGV,
+        lucroEst, margemEst, lucroEquity, lucroFin, margemEquity, margemFin,
+        tirEqAA, tirFinAA, paybackEq, paybackFin, expMaxEq, expMaxFin,
+        totalJuros, equityInvestido, mod,
+        ticket: vgv / (uhEfetivo || 1),
+      };
+    }
+
+    // ============================================================================
+    // GOAL SEEK / REVERSE ANALYSIS
+    // ============================================================================
+
+    // Goal seek: encontra valor máximo do terreno que atinge o target
+    // metricFn: função que extrai a métrica do resultado (ex: r => r.tirFinAA)
+    function findMaxTerreno(baseParams, targetValue, mode, metricFn) {
+      let lo = 0, hi;
+      const area = baseParams.area_vendavel || (baseParams.qtde_uh * baseParams.area_uh);
+      const vgvBruto = area * baseParams.preco_m2;
+
+      if (mode === 'compra') {
+        hi = vgvBruto * 0.8; // terreno nunca vai ser mais que 80% do VGV
+        for (let i = 0; i < 50; i++) {
+          const mid = (lo + hi) / 2;
+          const p = { ...baseParams, mod_terreno: 'compra', custo_terreno: mid, entrada_terreno: 50, parcelas_terreno: 6 };
+          const r = simulate(p);
+          if (metricFn(r) >= targetValue) lo = mid;
+          else hi = mid;
+        }
+        return Math.floor(lo / 10000) * 10000;
+      } else if (mode === 'permuta') {
+        hi = 50; // max 50% em permuta
+        for (let i = 0; i < 50; i++) {
+          const mid = (lo + hi) / 2;
+          const p = { ...baseParams, mod_terreno: 'permuta', permuta_pct: mid };
+          const r = simulate(p);
+          if (metricFn(r) >= targetValue) lo = mid;
+          else hi = mid;
+        }
+        return vgvBruto * (lo / 100);
+      } else if (mode === 'mista') {
+        hi = vgvBruto * 0.5;
+        for (let i = 0; i < 50; i++) {
+          const mid = (lo + hi) / 2;
+          const p = { ...baseParams, mod_terreno: 'mista', mista_dinheiro: mid * (baseParams.mista_din_pct || 25) / 100, mista_entrada: 50, mista_parcelas: 6, mista_permuta_pct: baseParams.mista_perm_pct || 10 };
+          const r = simulate(p);
+          if (metricFn(r) >= targetValue) lo = mid;
+          else hi = mid;
+        }
+        return Math.floor(lo / 10000) * 10000;
+      }
+      return 0;
+    }
+
+    // ============================================================================
+    // TIR DO DONO DO TERRENO
+    // ============================================================================
+
+    function calcTIRDono(valorPedido, modeObj, p) {
+      const mod = modeObj.mod;
+      const params = modeObj.params;
+      const r = simulate(params);
+      const mesEntrega = Math.round(p.mes_lanc + p.prazo_obra); // mês de entrega das chaves
+
+      // Fluxo do dono: ele "investe" o terreno e recebe pagamentos
+      const N = mesEntrega + 1;
+      const flows = new Array(N).fill(0);
+
+      // Mês 0: dono entrega o terreno (saída / custo de oportunidade)
+      flows[0] = -valorPedido;
+
+      if (mod === 'compra') {
+        // Recebe entrada no mês 0 + parcelas nos meses seguintes
+        const entPct = (params.entrada_terreno || 50) / 100;
+        const nParc = params.parcelas_terreno || 6;
+        flows[0] += r.custoTerrenoCaixa * entPct;
+        const parcMensal = r.custoTerrenoCaixa * (1 - entPct) / Math.max(1, nParc);
+        for (let m = 1; m <= nParc && m < N; m++) {
+          flows[m] += parcMensal;
+        }
+      } else if (mod === 'permuta') {
+        // Recebe unidades na entrega das chaves
+        flows[mesEntrega] += r.permutaVGV;
+      } else if (mod === 'mista') {
+        // Recebe dinheiro (entrada + parcelas) + unidades na entrega
+        const entPct = (params.mista_entrada || 50) / 100;
+        const nParc = params.mista_parcelas || 6;
+        const dinTotal = r.custoTerrenoCaixa;
+        flows[0] += dinTotal * entPct;
+        const parcMensal = dinTotal * (1 - entPct) / Math.max(1, nParc);
+        for (let m = 1; m <= nParc && m < N; m++) {
+          flows[m] += parcMensal;
+        }
+        flows[mesEntrega] += r.permutaVGV;
+      }
+
+      // Calcular IRR mensal e anualizar
+      // Trim trailing zeros
+      let last = flows.length - 1;
+      while (last > 0 && Math.abs(flows[last]) < 0.01) last--;
+      const trimmed = flows.slice(0, last + 1);
+
+      // Verificar se tem fluxo positivo e negativo
+      const hasPos = trimmed.some(f => f > 0);
+      const hasNeg = trimmed.some(f => f < 0);
+      if (!hasPos || !hasNeg) return null;
+
+      // Newton-Raphson
+      let rate = 0.01;
+      for (let iter = 0; iter < 200; iter++) {
+        let npv = 0, dnpv = 0;
+        for (let i = 0; i < trimmed.length; i++) {
+          if (trimmed[i] === 0) continue;
+          const d = Math.pow(1 + rate, i);
+          npv += trimmed[i] / d;
+          dnpv -= i * trimmed[i] / (d * (1 + rate));
+        }
+        if (Math.abs(dnpv) < 1e-15) break;
+        const nr = rate - npv / dnpv;
+        if (Math.abs(nr - rate) < 1e-10) { rate = nr; break; }
+        rate = nr;
+        if (rate < -0.5) rate = -0.49;
+        if (rate > 2) rate = 1.99;
+      }
+
+      const tirAA = Math.pow(1 + rate, 12) - 1;
+      return tirAA;
+    }
+
+    // ============================================================================
+    // UI FORMATTING
+    // ============================================================================
+
+    function formatMoney(value) {
+      return 'R$ ' + Math.round(value).toLocaleString('pt-BR');
+    }
+
+    function formatPercent(value) {
+      return (value * 100).toFixed(2).replace('.', ',') + '%';
+    }
+
+    // 3 níveis: TIR < 20% = reprovado, 20-25% = em análise, > 25% = aprovado
+    //           Margem < 15% = reprovado, 15-20% = em análise, > 20% = aprovado
+    function classifyTIR(tir) {
+      const pct = tir * 100;
+      const alvo = parseFloat(document.getElementById('tir-alvo').value) || 25;
+      const min = parseFloat(document.getElementById('tir-min').value) || 20;
+      if (pct >= alvo) return 'good';
+      if (pct >= min) return 'warning';
+      return 'bad';
+    }
+    function classifyMargem(margem) {
+      const pct = margem * 100;
+      const alvo = parseFloat(document.getElementById('margem-alvo').value) || 20;
+      const min = parseFloat(document.getElementById('margem-min').value) || 15;
+      if (pct >= alvo) return 'good';
+      if (pct >= min) return 'warning';
+      return 'bad';
+    }
+    function classifyLabel(cls) {
+      if (cls === 'good') return 'APROVADO';
+      if (cls === 'warning') return 'EM ANÁLISE';
+      return 'REPROVADO';
+    }
+
+    function formatValue(value) {
+      if (typeof value === 'number') {
+        if (value > 100) return formatMoney(value);
+        if (value > 1) return value.toFixed(2).replace('.', ',');
+        return formatPercent(value);
+      }
+      return value;
+    }
+
+    // ============================================================================
+    // STATE MANAGEMENT
+    // ============================================================================
+
+    function getParams() {
+      return {
+        qtde_uh: parseFloat(document.getElementById('qtde-uh').value) || 0,
+        area_uh: parseFloat(document.getElementById('area-uh').value) || 100,
+        area_vendavel: parseFloat(document.getElementById('area-vendavel').value) || 5000,
+        custo_terreno: parseFloat(document.getElementById('custo-terreno').value) || 3000000,
+        preco_m2: parseFloat(document.getElementById('preco-m2').value) || 9000,
+        custo_m2: parseFloat(document.getElementById('custo-m2').value) || 4500,
+        comissao: parseFloat(document.getElementById('comissao').value) || 5,
+        impostos: parseFloat(document.getElementById('impostos').value) || 5,
+        indiretos: parseFloat(document.getElementById('indiretos').value) || 11,
+        mes_lanc: parseFloat(document.getElementById('mes-lanc').value) || 18,
+        prazo_obra: parseFloat(document.getElementById('prazo-obra').value) || 36,
+        prazo_vendas: parseFloat(document.getElementById('prazo-vendas').value) || 12,
+        pct_4m: parseFloat(document.getElementById('pct-4m').value) || 40,
+        pre_lanc_meses: parseFloat(document.getElementById('pre-lanc-meses').value) || 24,
+        pre_lanc_pct: parseFloat(document.getElementById('pre-lanc-pct').value) || 2,
+        pag_entrada: parseFloat(document.getElementById('pag-entrada').value) || 12.5,
+        pag_mensais: parseFloat(document.getElementById('pag-mensais').value) || 12.5,
+        pag_anuais: parseFloat(document.getElementById('pag-anuais').value) || 15,
+        pag_chaves: parseFloat(document.getElementById('pag-chaves').value) || 60,
+        taxa_fin: parseFloat(document.getElementById('taxa-fin').value) || 1.95,
+        pct_fin: parseFloat(document.getElementById('pct-fin').value) || 70,
+        pct_vendas_fin: parseFloat(document.getElementById('pct-vendas-fin').value) || 40,
+        mista_din_pct: parseFloat(document.getElementById('mista-din-pct').value) || 25,
+        mista_perm_pct: parseFloat(document.getElementById('mista-perm-pct').value) || 10,
+        margem_alvo: parseFloat(document.getElementById('margem-alvo').value) || 20,
+        margem_min: parseFloat(document.getElementById('margem-min').value) || 15,
+        tir_alvo: parseFloat(document.getElementById('tir-alvo').value) || 25,
+        tir_min: parseFloat(document.getElementById('tir-min').value) || 20,
+      };
+    }
+
+    // ============================================================================
+    // RENDER FUNCTIONS
+    // ============================================================================
+
+    function renderSummaryCards() {
+      const p = getParams();
+      const r = simulate(p);
+      const container = document.getElementById('summary-cards');
+
+      const cards = [
+        { label: 'VGV', value: r.vgvBruto, cls: '', isPercent: false },
+        { label: 'Custo Total', value: r.custoTotal, cls: '', isPercent: false },
+        { label: 'Lucro Estático', value: r.lucroEst, cls: r.lucroEst > 0 ? '' : 'bad', isPercent: false },
+        { label: 'Margem %', value: r.margemEst, cls: classifyMargem(r.margemEst), isPercent: true },
+        { label: 'TIR Equity a.a.', value: r.tirEqAA, cls: classifyTIR(r.tirEqAA), isPercent: true },
+        { label: 'TIR c/ Fin a.a.', value: r.tirFinAA, cls: classifyTIR(r.tirFinAA), isPercent: true },
+      ];
+
+      container.innerHTML = cards.map(card => {
+        const displayValue = card.isPercent ? formatPercent(card.value) : formatMoney(card.value);
+        const subLabel = card.cls ? `<div style="font-size:10px;margin-top:4px;font-weight:700">${classifyLabel(card.cls)}</div>` : '';
+        return `<div class="card ${card.cls}">
+          <div class="card-label">${card.label}</div>
+          <div class="card-value">${displayValue}</div>
+          ${subLabel}
+        </div>`;
+      }).join('');
+    }
+
+    function renderMatrizAquisicao() {
+      const p = getParams();
+
+      const modes = [
+        { label: 'Compra 100%', mod: 'compra', params: { ...p, mod_terreno: 'compra', entrada_terreno: 50, parcelas_terreno: 6 } },
+        { label: 'Permuta 10%', mod: 'permuta', params: { ...p, mod_terreno: 'permuta', permuta_pct: 10 } },
+        { label: 'Permuta 15%', mod: 'permuta', params: { ...p, mod_terreno: 'permuta', permuta_pct: 15 } },
+        { label: 'Permuta 20%', mod: 'permuta', params: { ...p, mod_terreno: 'permuta', permuta_pct: 20 } },
+        { label: `Mista (${p.mista_din_pct}%+${p.mista_perm_pct}%)`, mod: 'mista', params: { ...p, mod_terreno: 'mista', mista_dinheiro: p.custo_terreno * p.mista_din_pct / 100, mista_entrada: 50, mista_parcelas: 6, mista_permuta_pct: p.mista_perm_pct } },
+      ];
+
+      const results = modes.map(m => ({
+        label: m.label,
+        r: simulate(m.params),
+      }));
+
+      const metrics = [
+        { label: 'VGV Incorporador', key: 'vgv', isPercent: false },
+        { label: 'Custo Terreno (caixa)', key: 'custoTerrenoCaixa', isPercent: false },
+        { label: 'Custo Total', key: 'custoTotal', isPercent: false },
+        { label: 'Lucro Estático', key: 'lucroEst', isPercent: false },
+        { label: 'Margem (% VGV)', key: 'margemEst', isPercent: true },
+        { label: 'TIR Equity a.a.', key: 'tirEqAA', isPercent: true },
+        { label: 'TIR c/ Financiamento a.a.', key: 'tirFinAA', isPercent: true },
+        { label: 'Exposição Máxima', key: 'expMaxEq', isPercent: false },
+        { label: 'Payback', key: 'paybackEq', isPercent: false },
+        { label: 'Equity Investido', key: 'equityInvestido', isPercent: false },
+      ];
+
+      let html = '<thead><tr><th>Métrica</th>';
+      results.forEach(res => {
+        html += `<th>${res.label}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+
+      metrics.forEach(metric => {
+        html += `<tr><td style="font-weight: 600;">${metric.label}</td>`;
+        results.forEach(res => {
+          const value = res.r[metric.key];
+          const displayValue = metric.isPercent ? formatPercent(value) : formatMoney(value);
+          let cssClass = '';
+          if (metric.key === 'margemEst') cssClass = 'cell-' + classifyMargem(value);
+          else if (metric.key === 'tirEqAA' || metric.key === 'tirFinAA') cssClass = 'cell-' + classifyTIR(value);
+
+          html += `<td class="${cssClass}">${displayValue}</td>`;
+        });
+        html += '</tr>';
+      });
+
+      // ── Bloco: Retorno do Dono do Terreno ──
+      const valorRef = p.custo_terreno;
+      html += `<tr><td colspan="${results.length + 1}" style="background:var(--gd);color:var(--au);font-weight:700;padding:10px;letter-spacing:0.5px;font-size:11px">RETORNO DO TERRENISTA</td></tr>`;
+
+      // Linha: O que o dono recebe
+      html += '<tr><td style="font-weight:600">Recebe (total)</td>';
+      results.forEach(res => {
+        const r = res.r;
+        const recebeDinheiro = r.custoTerrenoCaixa || 0;
+        const recebePermuta = r.permutaVGV || 0;
+        const recebeTotal = recebeDinheiro + recebePermuta;
+        html += `<td style="font-weight:700">${formatMoney(recebeTotal)}</td>`;
+      });
+      html += '</tr>';
+
+      // Linha: Composição (dinheiro vs permuta)
+      html += '<tr><td style="font-weight:600">Composição</td>';
+      results.forEach(res => {
+        const r = res.r;
+        const din = r.custoTerrenoCaixa || 0;
+        const perm = r.permutaVGV || 0;
+        let desc = '';
+        if (din > 0 && perm > 0) desc = formatMoney(din) + ' + ' + formatMoney(perm) + ' (UH)';
+        else if (din > 0) desc = formatMoney(din) + ' (dinheiro)';
+        else if (perm > 0) desc = formatMoney(perm) + ' (unidades)';
+        else desc = '-';
+        html += `<td style="font-size:11px">${desc}</td>`;
+      });
+      html += '</tr>';
+
+      // Linha: Ganho vs valor de referência + métrica do dono
+      html += '<tr><td style="font-weight:600">Ganho vs valor pedido</td>';
+      results.forEach((res, idx) => {
+        const r = res.r;
+        const recebeTotal = (r.custoTerrenoCaixa || 0) + (r.permutaVGV || 0);
+        const ganho = recebeTotal - valorRef;
+        const ganhoPct = valorRef > 0 ? (ganho / valorRef * 100).toFixed(1) : '0.0';
+        const color = ganho > 0 ? '#4CAF50' : ganho < 0 ? '#F44336' : 'inherit';
+        const sinal = ganho > 0 ? '+' : '';
+
+        // Métrica do dono: % do VGV que ele recebe (permuta/mista)
+        let metricaDono = '';
+        const mod = modes[idx].mod;
+        if (mod === 'permuta') {
+          const pctVGV = r.vgvBruto > 0 ? ((r.permutaVGV / r.vgvBruto) * 100).toFixed(1) : '0';
+          metricaDono = ` · ${pctVGV}% do VGV em UH`;
+        } else if (mod === 'mista') {
+          const pctDin = r.vgvBruto > 0 ? ((r.custoTerrenoCaixa / r.vgvBruto) * 100).toFixed(1) : '0';
+          const pctPerm = r.vgvBruto > 0 ? ((r.permutaVGV / r.vgvBruto) * 100).toFixed(1) : '0';
+          metricaDono = ` · ${pctDin}% din. + ${pctPerm}% UH`;
+        }
+
+        html += `<td style="font-weight:600;color:${color}">${sinal}${formatMoney(ganho)} (${sinal}${ganhoPct}%)${metricaDono ? '<br><span style="font-size:10px;color:var(--al)">' + metricaDono + '</span>' : ''}</td>`;
+      });
+      html += '</tr>';
+
+      // Linha: TIR do Terrenista (só para permuta e mista)
+      html += '<tr><td style="font-weight:600">TIR do Terrenista (a.a.)</td>';
+      results.forEach((res, idx) => {
+        const mod = modes[idx].mod;
+        if (mod === 'compra') {
+          html += '<td style="color:var(--gm);font-size:10px">—<br>Recebe à vista</td>';
+        } else {
+          const tirDono = calcTIRDono(valorRef, modes[idx], p);
+          if (tirDono === null) {
+            html += '<td style="color:var(--gm)">N/A</td>';
+          } else {
+            const pct = tirDono * 100;
+            let color = 'var(--wh)';
+            let nota = '';
+            if (pct > 50) { color = '#4CAF50'; nota = 'Excelente'; }
+            else if (pct > 20) { color = '#4CAF50'; nota = 'Bom'; }
+            else if (pct > 10) { color = '#FF9800'; nota = 'Moderado'; }
+            else if (pct > 0) { color = '#F44336'; nota = 'Baixo'; }
+            else { color = '#F44336'; nota = 'Negativo'; }
+            const prazo = Math.round(p.mes_lanc + p.prazo_obra);
+            html += `<td style="font-weight:700;color:${color}">${formatPercent(tirDono)}<br><span style="font-size:10px;color:var(--gm)">${nota} · ${prazo} meses</span></td>`;
+          }
+        }
+      });
+      html += '</tr>';
+
+      html += '</tbody>';
+      document.getElementById('matriz-aquisicao').innerHTML = html;
+    }
+
+    // Helper: gera célula com 3 faróis (Margem · TIR Eq · TIR Fin)
+    // Helper: gera 3 TDs separados para Margem, TIR Eq, TIR Fin com faróis
+    function sensibCells(r) {
+      const colors = { good: '#4CAF50', warning: '#FF9800', bad: '#F44336' };
+      const bgMap = { good: 'rgba(76,175,80,0.10)', warning: 'rgba(255,152,0,0.10)', bad: 'rgba(244,67,54,0.10)' };
+
+      const clsM = classifyMargem(r.margemEst);
+      const clsEq = classifyTIR(r.tirEqAA);
+      const clsFin = classifyTIR(r.tirFinAA);
+
+      function cell(val, cls, bold) {
+        return `<td style="text-align:center;color:${colors[cls]};background:${bgMap[cls]};font-weight:${bold ? '700' : '400'};padding:6px 10px">${formatPercent(val)}</td>`;
+      }
+
+      return cell(r.margemEst, clsM, false) + cell(r.tirEqAA, clsEq, false) + cell(r.tirFinAA, clsFin, true);
+    }
+
+    // ── Sensibilidade: Compra 100% (variação do valor do terreno) ──
+    function renderSensibCompra() {
+      const p = getParams();
+      const valorPedido = p.custo_terreno;
+      const pcts = [0.50, 0.60, 0.70, 0.80, 0.90, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50];
+
+      let html = '<thead><tr>';
+      html += '<th style="min-width:130px">Valor Terreno</th>';
+      html += '<th style="min-width:50px">% Ref</th>';
+      html += '<th style="min-width:90px">Margem</th>';
+      html += '<th style="min-width:90px">TIR Equity</th>';
+      html += '<th style="min-width:90px">TIR c/ Fin</th>';
+      html += '</tr></thead><tbody>';
+
+      pcts.forEach(pct => {
+        const val = Math.round(valorPedido * pct / 10000) * 10000;
+        const isBase = pct === 1.00;
+        const rowStyle = isBase ? 'background:rgba(201,168,76,0.15);font-weight:600;' : '';
+        const pctLabel = Math.round(pct * 100) + '%';
+
+        const params = { ...p, mod_terreno: 'compra', custo_terreno: val, entrada_terreno: 50, parcelas_terreno: 6 };
+        const r = simulate(params);
+
+        html += `<tr style="${rowStyle}">`;
+        html += `<td style="font-weight:600">${formatMoney(val)}${isBase ? ' ★' : ''}</td>`;
+        html += `<td style="text-align:center;color:${isBase ? 'var(--au)' : 'var(--gm)'}">${pctLabel}</td>`;
+        html += sensibCells(r);
+        html += '</tr>';
+      });
+
+      html += '</tbody>';
+      document.getElementById('sensib-compra').innerHTML = html;
+    }
+
+    // ── Sensibilidade: Permuta (variação do % de permuta) ──
+    function renderSensibPermuta() {
+      const p = getParams();
+      const permPcts = [5, 8, 10, 12, 15, 18, 20, 25, 30, 35];
+      const permBase = p.mista_perm_pct || 10;
+
+      let html = '<thead><tr>';
+      html += '<th style="min-width:80px">% Permuta</th>';
+      html += '<th style="min-width:120px">Valor Permuta</th>';
+      html += '<th style="min-width:90px">Margem</th>';
+      html += '<th style="min-width:90px">TIR Equity</th>';
+      html += '<th style="min-width:90px">TIR c/ Fin</th>';
+      html += '</tr></thead><tbody>';
+
+      permPcts.forEach(pct => {
+        const params = { ...p, mod_terreno: 'permuta', permuta_pct: pct };
+        const r = simulate(params);
+        const isBase = pct === permBase;
+        const rowStyle = isBase ? 'background:rgba(201,168,76,0.15);font-weight:600;' : '';
+
+        html += `<tr style="${rowStyle}">`;
+        html += `<td style="font-weight:600;text-align:center">${pct}%${isBase ? ' ★' : ''}</td>`;
+        html += `<td style="text-align:center">${formatMoney(r.permutaVGV)}</td>`;
+        html += sensibCells(r);
+        html += '</tr>';
+      });
+
+      html += '</tbody>';
+      document.getElementById('sensib-permuta').innerHTML = html;
+    }
+
+    function renderPaymentMatrix() {
+      const p = getParams();
+
+      const entradas = [20, 30, 40, 50, 60, 70, 80, 100];
+      const parcelas = [0, 3, 6, 12, 18, 24];
+
+      let html = '<div class="payment-grid-header">';
+      html += '<div class="payment-cell header">Entrada %</div>';
+      parcelas.forEach(parc => {
+        html += `<div class="payment-cell header">${parc} meses</div>`;
+      });
+      html += '</div>';
+
+      entradas.forEach(entrada => {
+        html += '<div class="payment-grid-row">';
+        html += `<div class="payment-cell label">${entrada}%</div>`;
+
+        parcelas.forEach(parc => {
+          const params = { ...p, mod_terreno: 'compra', entrada_terreno: entrada, parcelas_terreno: parc };
+          const r = simulate(params);
+          const tirValue = r.tirFinAA;
+          const cls = classifyTIR(tirValue);
+          const displayValue = formatPercent(tirValue);
+
+          html += `<div class="payment-cell ${cls}">${displayValue}</div>`;
+        });
+
+        html += '</div>';
+      });
+
+      document.getElementById('payment-grid').innerHTML = html;
+    }
+
+    function renderReverseAnalysis() {
+      const p = getParams();
+      const tirFn = r => r.tirFinAA; // TIR c/ financiamento como critério principal
+      const tirAlvo = p.tir_alvo / 100;
+      const tirMin = p.tir_min / 100;
+
+      const scenarios = [
+        { label: 'Compra', mode: 'compra' },
+        { label: 'Permuta 15%', mode: 'permuta' },
+        { label: `Mista (${p.mista_din_pct}%+${p.mista_perm_pct}%)`, mode: 'mista' },
+      ];
+
+      let html = '';
+      scenarios.forEach(scenario => {
+        const maxAprovado = findMaxTerreno(p, tirAlvo, scenario.mode, tirFn);
+        const maxAnalise = findMaxTerreno(p, tirMin, scenario.mode, tirFn);
+
+        const unit = scenario.mode === 'permuta' ? ' (equiv.)' : '';
+
+        html += `
+          <div class="reverse-card">
+            <h4>${scenario.label}</h4>
+            <div style="margin:8px 0">
+              <div style="font-size:10px;color:#4CAF50;font-weight:700;letter-spacing:0.5px">APROVADO (TIR ≥ ${p.tir_alvo}% a.a.)</div>
+              <div class="value" style="color:#4CAF50">${formatMoney(maxAprovado)}${unit}</div>
+            </div>
+            <div style="margin:8px 0">
+              <div style="font-size:10px;color:#FF9800;font-weight:700;letter-spacing:0.5px">EM ANÁLISE (TIR ≥ ${p.tir_min}% a.a.)</div>
+              <div class="value" style="color:#FF9800;font-size:16px">${formatMoney(maxAnalise)}${unit}</div>
+            </div>
+            <div class="subtitle">Valor máximo do terreno por faixa de TIR c/ financiamento</div>
+          </div>
+        `;
+      });
+
+      document.getElementById('reverse-cards').innerHTML = html;
+    }
+
+    function renderRankingTable() {
+      const terrenos = loadAllTerrenos();
+      const p = getParams();
+
+      const ranked = terrenos
+        .map(t => {
+          const params = { ...p, custo_terreno: t.custo_terreno, qtde_uh: t.qtde_uh, area_uh: t.area_uh, area_vendavel: t.area_vendavel, preco_m2: t.preco_m2, custo_m2: t.custo_m2 };
+          const rCompra = simulate({ ...params, mod_terreno: 'compra', entrada_terreno: 50, parcelas_terreno: 6 });
+          const rPermuta = simulate({ ...params, mod_terreno: 'permuta', permuta_pct: 15 });
+          // Veredicto: o PIOR entre margem e TIR define o resultado
+          const clsMargem = classifyMargem(rCompra.margemEst);
+          const clsTIR = classifyTIR(rCompra.tirFinAA);
+          const worst = (a, b) => {
+            const order = { bad: 0, warning: 1, good: 2 };
+            return order[a] <= order[b] ? a : b;
+          };
+          const veredicto = worst(clsMargem, clsTIR);
+          return {
+            nome: t.nome,
+            custo_terreno: t.custo_terreno,
+            vgv: rCompra.vgv,
+            margemCompra: rCompra.margemEst,
+            tirCompra: rCompra.tirFinAA,
+            margemPermuta: rPermuta.margemEst,
+            tirPermuta: rPermuta.tirFinAA,
+            veredicto,
+            tirCompraValue: rCompra.tirFinAA,
+          };
+        })
+        .sort((a, b) => b.tirCompraValue - a.tirCompraValue);
+
+      let html = '<thead><tr>';
+      html += '<th>Terreno</th><th>Valor Pedido</th><th>VGV</th>';
+      html += '<th>Margem Compra</th><th>TIR Compra</th>';
+      html += '<th>Margem Permuta 15%</th><th>TIR Permuta 15%</th>';
+      html += '<th>Veredicto</th></tr></thead><tbody>';
+
+      ranked.forEach(t => {
+        const verdictText = classifyLabel(t.veredicto);
+        const verdictColors = { good: '#4CAF50', warning: '#FF9800', bad: '#F44336' };
+        const clsM = classifyMargem(t.margemCompra);
+        const clsT = classifyTIR(t.tirCompra);
+        const clsMP = classifyMargem(t.margemPermuta);
+        const clsTP = classifyTIR(t.tirPermuta);
+        html += `<tr>
+          <td style="font-weight:600">${t.nome || '(sem nome)'}</td>
+          <td>${formatMoney(t.custo_terreno)}</td>
+          <td>${formatMoney(t.vgv)}</td>
+          <td class="cell-${clsM}">${formatPercent(t.margemCompra)}</td>
+          <td class="cell-${clsT}">${formatPercent(t.tirCompra)}</td>
+          <td class="cell-${clsMP}">${formatPercent(t.margemPermuta)}</td>
+          <td class="cell-${clsTP}">${formatPercent(t.tirPermuta)}</td>
+          <td style="font-weight:700;color:${verdictColors[t.veredicto]};text-align:center">${verdictText}</td>
+        </tr>`;
+      });
+
+      html += '</tbody>';
+      document.getElementById('ranking-table').innerHTML = html;
+    }
+
+    // ============================================================================
+    // STORAGE
+    // ============================================================================
+
+    function salvarTerreno() {
+      const nome = document.getElementById('terreno-nome').value.trim();
+      if (!nome) {
+        alert('Digite um nome para o terreno');
+        return;
+      }
+
+      const terrenos = loadAllTerrenos();
+      const idx = terrenos.findIndex(t => t.nome === nome);
+
+      const novoTerreno = {
+        nome,
+        qtde_uh: parseFloat(document.getElementById('qtde-uh').value) || 0,
+        area_uh: parseFloat(document.getElementById('area-uh').value) || 100,
+        area_vendavel: parseFloat(document.getElementById('area-vendavel').value) || 5000,
+        custo_terreno: parseFloat(document.getElementById('custo-terreno').value) || 3000000,
+        preco_m2: parseFloat(document.getElementById('preco-m2').value) || 9000,
+        custo_m2: parseFloat(document.getElementById('custo-m2').value) || 4500,
+      };
+
+      if (idx >= 0) {
+        terrenos[idx] = novoTerreno;
+      } else {
+        terrenos.push(novoTerreno);
+      }
+
+      localStorage.setItem('dom_aquisicao_terrenos', JSON.stringify(terrenos));
+      atualizarDropdownTerrenos();
+      alert('Terreno salvo com sucesso!');
+    }
+
+    function apagarTerreno() {
+      const nome = document.getElementById('terreno-nome').value.trim();
+      if (!nome) return;
+
+      const terrenos = loadAllTerrenos();
+      const filtered = terrenos.filter(t => t.nome !== nome);
+      localStorage.setItem('dom_aquisicao_terrenos', JSON.stringify(filtered));
+      atualizarDropdownTerrenos();
+      alert('Terreno apagado!');
+    }
+
+    function carregarTerreno() {
+      const select = document.getElementById('terrenos-dropdown');
+      const nome = select.value;
+      if (!nome) return;
+
+      const terrenos = loadAllTerrenos();
+      const terreno = terrenos.find(t => t.nome === nome);
+      if (!terreno) return;
+
+      document.getElementById('terreno-nome').value = terreno.nome;
+      document.getElementById('qtde-uh').value = terreno.qtde_uh || 0;
+      document.getElementById('area-uh').value = terreno.area_uh || 100;
+      document.getElementById('area-vendavel').value = terreno.area_vendavel || 5000;
+      document.getElementById('custo-terreno').value = terreno.custo_terreno || 3000000;
+      document.getElementById('preco-m2').value = terreno.preco_m2 || 9000;
+      document.getElementById('custo-m2').value = terreno.custo_m2 || 4500;
+
+      atualizarUI();
+    }
+
+    // Terrenos pré-cadastrados (exemplo)
+    const TERRENOS_SEED = [
+      { nome: 'Jd Eldorado', qtde_uh: 29, area_uh: 107.1, area_vendavel: 3105.9, custo_terreno: 2200000, preco_m2: 9000, custo_m2: 4500 },
+    ];
+
+    function loadAllTerrenos() {
+      const data = localStorage.getItem('dom_aquisicao_terrenos');
+      const salvos = data ? JSON.parse(data) : [];
+      // Mescla seeds com salvos (salvos sobrescrevem seeds de mesmo nome)
+      const nomesSalvos = new Set(salvos.map(t => t.nome));
+      const seeds = TERRENOS_SEED.filter(t => !nomesSalvos.has(t.nome));
+      return [...seeds, ...salvos];
+    }
+
+    function atualizarDropdownTerrenos() {
+      const terrenos = loadAllTerrenos();
+      const select = document.getElementById('terrenos-dropdown');
+      select.innerHTML = '<option value="">-- Selecione um terreno --</option>';
+      terrenos.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.nome;
+        opt.textContent = t.nome;
+        select.appendChild(opt);
+      });
+    }
+
+    // ============================================================================
+    // UI INTERACTION
+    // ============================================================================
+
+    function toggleCollapsible(el) {
+      el.classList.toggle('expanded');
+      const content = el.nextElementSibling;
+      if (content) {
+        content.classList.toggle('expanded');
+      }
+    }
+
+    function atualizarUI() {
+      renderSummaryCards();
+      renderMatrizAquisicao();
+      renderSensibCompra();
+      renderSensibPermuta();
+      renderPaymentMatrix();
+      renderReverseAnalysis();
+      renderRankingTable();
+    }
+
+    // ============================================================================
+    // INITIALIZATION & AUTO-CALCULATION
+    // ============================================================================
+
+    document.addEventListener('DOMContentLoaded', () => {
+      atualizarDropdownTerrenos();
+
+      const inputIds = [
+        'qtde-uh', 'area-uh', 'area-vendavel',
+        'custo-terreno', 'preco-m2', 'custo-m2',
+        'comissao', 'impostos', 'indiretos',
+        'mes-lanc', 'prazo-obra', 'prazo-vendas', 'pct-4m',
+        'pre-lanc-meses', 'pre-lanc-pct',
+        'pag-entrada', 'pag-mensais', 'pag-anuais', 'pag-chaves',
+        'taxa-fin', 'pct-fin', 'pct-vendas-fin',
+        'mista-din-pct', 'mista-perm-pct',
+        'margem-alvo', 'margem-min', 'tir-alvo', 'tir-min'
+      ];
+
+      inputIds.forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+          // Auto-calc area_vendavel if both qtde_uh and area_uh > 0
+          const qtde = parseFloat(document.getElementById('qtde-uh').value) || 0;
+          const areaUh = parseFloat(document.getElementById('area-uh').value) || 100;
+          if (qtde > 0 && areaUh > 0) {
+            const calculated = qtde * areaUh;
+            document.getElementById('area-vendavel').value = calculated.toFixed(0);
+          }
+
+          atualizarUI();
+        });
+      });
+
+      atualizarUI();
+    });
+  </script>
+</body>
+</html>
