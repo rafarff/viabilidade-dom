@@ -304,6 +304,156 @@
       margin-bottom: 25px;
     }
 
+    /* Bloco "Pedido vs Espaço de Negociação" — destaque maior, 3 cards lado a lado */
+    .negotiation-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 25px;
+      align-items: stretch;
+    }
+
+    @media (max-width: 1100px) {
+      .negotiation-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .nego-card {
+      background: linear-gradient(135deg, var(--gm) 0%, var(--gd) 100%);
+      border: 2px solid var(--au);
+      padding: 18px;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .nego-card.pedido { border-color: var(--au); }
+    .nego-card.aprovado { border-color: #4CAF50; background: linear-gradient(135deg, rgba(76,175,80,0.18) 0%, rgba(76,175,80,0.06) 100%); }
+    .nego-card.analise  { border-color: #FF9800; background: linear-gradient(135deg, rgba(255,152,0,0.18) 0%, rgba(255,152,0,0.06) 100%); }
+    .nego-card.bad      { border-color: #F44336; background: linear-gradient(135deg, rgba(244,67,54,0.18) 0%, rgba(244,67,54,0.06) 100%); }
+
+    .nego-card .nego-label {
+      font-size: 11px;
+      color: var(--al);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .nego-card.aprovado .nego-label { color: #4CAF50; }
+    .nego-card.analise  .nego-label { color: #FF9800; }
+    .nego-card.bad      .nego-label { color: #F44336; }
+
+    .nego-card .nego-headline {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--wh);
+      letter-spacing: 0.3px;
+      margin-bottom: 4px;
+      line-height: 1.15;
+    }
+
+    .nego-card .nego-sublabel {
+      font-size: 11px;
+      color: var(--al);
+      font-style: italic;
+      margin-bottom: 12px;
+    }
+
+    .nego-card .nego-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 10px;
+      background: rgba(0,0,0,0.25);
+      border-radius: 3px;
+      margin-bottom: 10px;
+    }
+
+    .nego-card .nego-metric .nm-label {
+      font-size: 10px;
+      color: var(--al);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .nego-card .nego-metric .nm-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--wh);
+    }
+
+    .nego-card .nego-farol {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      align-self: flex-start;
+    }
+    .nego-card .nego-farol.good    { background: rgba(76,175,80,0.4); color: #4CAF50; }
+    .nego-card .nego-farol.warning { background: rgba(255,152,0,0.4); color: #FF9800; }
+    .nego-card .nego-farol.bad     { background: rgba(244,67,54,0.4); color: #F44336; }
+
+    .nego-card .nego-folga {
+      font-size: 12px;
+      color: var(--al);
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(255,255,255,0.15);
+    }
+
+    .nego-card .nego-folga strong { color: var(--wh); }
+
+    /* Card pequeno de equivalência */
+    .equiv-card {
+      background: linear-gradient(135deg, var(--gm) 0%, var(--gd) 100%);
+      border-left: 4px solid var(--au);
+      padding: 15px 18px;
+      border-radius: 3px;
+      margin-bottom: 25px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .equiv-card .eq-block {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .equiv-card .eq-label {
+      font-size: 10px;
+      color: var(--al);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 4px;
+    }
+
+    .equiv-card .eq-value {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--au);
+    }
+
+    .equiv-card .eq-hint {
+      font-size: 11px;
+      color: var(--gm);
+      font-style: italic;
+      margin-top: 4px;
+    }
+
+    /* Coluna PEDIDO em destaque na Matriz */
+    .matriz-pedido-col {
+      background: rgba(201, 168, 76, 0.18) !important;
+      border-left: 3px solid var(--au) !important;
+      border-right: 3px solid var(--au) !important;
+    }
+
     .reverse-card {
       background: linear-gradient(135deg, var(--gm) 0%, var(--gd) 100%);
       border: 2px solid var(--au);
@@ -494,13 +644,26 @@
         </div>
       </div>
 
-      <!-- VALOR DO TERRENO -->
+      <!-- PEDIDO DO TERRENISTA -->
       <div class="section">
-        <div class="section-title">Valor do Terreno</div>
+        <div class="section-title">Pedido do Terrenista</div>
         <div class="form-group">
-          <label for="custo-terreno">Valor Pedido (R$)</label>
+          <label for="pedido-tipo">Tipo do pedido</label>
+          <select id="pedido-tipo">
+            <option value="compra">Compra à vista (R$)</option>
+            <option value="permuta">Permuta (% do VGV)</option>
+            <option value="mista">Mista (R$ + permuta)</option>
+          </select>
+        </div>
+        <div class="form-group" id="pedido-valor-group">
+          <label for="custo-terreno"><span id="pedido-valor-label">Valor pedido (R$)</span></label>
           <input type="number" id="custo-terreno" value="3000000" min="0" step="100000">
         </div>
+        <div class="form-group" id="pedido-permuta-group" style="display:none">
+          <label for="pedido-permuta-pct">% do VGV em permuta</label>
+          <input type="number" id="pedido-permuta-pct" value="15" min="0" max="50" step="0.5">
+        </div>
+        <div id="pedido-equiv-info" style="display:none;font-size:11px;color:var(--al);background:rgba(201,168,76,0.08);padding:8px 10px;border-radius:3px;border-left:3px solid var(--au);margin-top:8px"></div>
       </div>
 
       <!-- HIPÓTESE DE PRODUTO -->
@@ -628,10 +791,21 @@
     <div class="main">
       <!-- RESUMO RÁPIDO -->
       <div>
-        <h2 style="color: var(--au); font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px;">
+        <h2 id="resumo-title" style="color: var(--au); font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px;">
           Resumo Rápido — Compra 100%
         </h2>
         <div class="summary-cards" id="summary-cards"></div>
+      </div>
+
+      <!-- PEDIDO vs ESPAÇO DE NEGOCIAÇÃO -->
+      <div>
+        <h2 style="color: var(--au); font-size: 16px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+          Pedido vs Espaço de Negociação
+        </h2>
+        <p style="color: var(--gm); font-size: 12px; margin-bottom: 15px;">
+          O que o terrenista pede, e até onde a operação ainda fecha nas suas metas.
+        </p>
+        <div class="negotiation-cards" id="negotiation-cards"></div>
       </div>
 
       <!-- MATRIZ DE AQUISIÇÃO -->
@@ -642,6 +816,14 @@
         <div class="matrix-container">
           <table id="matriz-aquisicao"></table>
         </div>
+      </div>
+
+      <!-- EQUIVALÊNCIA R$ ⟷ PERMUTA -->
+      <div>
+        <h2 style="color: var(--au); font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px;">
+          Equivalência R$ ⟷ Permuta
+        </h2>
+        <div id="equivalencia-cards"></div>
       </div>
 
       <!-- SENSIBILIDADE: COMPRA 100% -->
@@ -953,6 +1135,69 @@
       return 0;
     }
 
+    // ─────────────────────────────────────────────────────────────────
+    // Goal-seek "type-aware" — devolve um objeto estruturado conforme o tipo
+    // do pedido. Usado pelo bloco "Pedido vs Espaço" e pela Análise Reversa.
+    //
+    //   compra  → { type, valor: R$ }
+    //   permuta → { type, pct: %, valorEquiv: R$ }   ← varia o %, fixa nada
+    //   mista   → { type, valor: R$, pct: % }        ← varia R$, fixa o %
+    //
+    // metricFn extrai a métrica do resultado da simulação (ex: r => r.tirFinAA)
+    // ─────────────────────────────────────────────────────────────────
+    function findMaxByType(baseParams, targetValue, type, metricFn, fixedPctMista) {
+      const area = baseParams.area_vendavel || (baseParams.qtde_uh * baseParams.area_uh);
+      const vgvBruto = area * baseParams.preco_m2;
+      let lo = 0, hi;
+
+      if (type === 'compra') {
+        hi = vgvBruto * 0.8;
+        for (let i = 0; i < 50; i++) {
+          const mid = (lo + hi) / 2;
+          const p = { ...baseParams, mod_terreno: 'compra', custo_terreno: mid, entrada_terreno: 50, parcelas_terreno: 6 };
+          const r = simulate(p);
+          if (metricFn(r) >= targetValue) lo = mid;
+          else hi = mid;
+        }
+        return { type: 'compra', valor: Math.floor(lo / 10000) * 10000 };
+      }
+
+      if (type === 'permuta') {
+        hi = 50;
+        for (let i = 0; i < 50; i++) {
+          const mid = (lo + hi) / 2;
+          const p = { ...baseParams, mod_terreno: 'permuta', permuta_pct: mid };
+          const r = simulate(p);
+          if (metricFn(r) >= targetValue) lo = mid;
+          else hi = mid;
+        }
+        const pct = Math.floor(lo * 10) / 10;
+        return { type: 'permuta', pct, valorEquiv: vgvBruto * pct / 100 };
+      }
+
+      // mista: varia R$ (componente dinheiro), mantém % permuta fixo
+      const pctFix = (typeof fixedPctMista === 'number')
+        ? fixedPctMista
+        : (baseParams.pedido_permuta_pct || baseParams.mista_perm_pct || 10);
+      hi = vgvBruto * 0.5;
+      for (let i = 0; i < 50; i++) {
+        const mid = (lo + hi) / 2;
+        const p = { ...baseParams, mod_terreno: 'mista', mista_dinheiro: mid, mista_entrada: 50, mista_parcelas: 6, mista_permuta_pct: pctFix };
+        const r = simulate(p);
+        if (metricFn(r) >= targetValue) lo = mid;
+        else hi = mid;
+      }
+      return { type: 'mista', valor: Math.floor(lo / 10000) * 10000, pct: pctFix };
+    }
+
+    // Formata o "valor" de um resultado de findMaxByType em texto curto
+    function formatMaxResult(res) {
+      if (!res) return '—';
+      if (res.type === 'compra') return formatMoney(res.valor);
+      if (res.type === 'permuta') return res.pct.toFixed(1).replace('.', ',') + '% (' + formatMoney(res.valorEquiv) + ')';
+      return formatMoney(res.valor) + ' + ' + res.pct.toFixed(1).replace('.', ',') + '% UH';
+    }
+
     // ============================================================================
     // TIR DO DONO DO TERRENO
     // ============================================================================
@@ -1078,13 +1323,32 @@
     // ============================================================================
 
     function getParams() {
+      const area_vendavel = parseFloat(document.getElementById('area-vendavel').value) || 5000;
+      const preco_m2 = parseFloat(document.getElementById('preco-m2').value) || 9000;
+      const vgvBruto = area_vendavel * preco_m2;
+
+      const pedido_tipo = document.getElementById('pedido-tipo')?.value || 'compra';
+      let custo_terreno = parseFloat(document.getElementById('custo-terreno').value) || 0;
+      const pedido_permuta_pct = parseFloat(document.getElementById('pedido-permuta-pct')?.value) || 0;
+
+      // Para pedido tipo 'permuta', o "valor" derivado é o equivalente em R$ do % pedido.
+      // Esse valor é usado como referência por blocos legados (Sensibilidade Compra, Ranking, TIR Terrenista).
+      if (pedido_tipo === 'permuta') {
+        custo_terreno = vgvBruto * pedido_permuta_pct / 100;
+      }
+
       return {
         qtde_uh: parseFloat(document.getElementById('qtde-uh').value) || 0,
         area_uh: parseFloat(document.getElementById('area-uh').value) || 100,
-        area_vendavel: parseFloat(document.getElementById('area-vendavel').value) || 5000,
-        custo_terreno: parseFloat(document.getElementById('custo-terreno').value) || 3000000,
-        preco_m2: parseFloat(document.getElementById('preco-m2').value) || 9000,
+        area_vendavel,
+        custo_terreno,
+        preco_m2,
         custo_m2: parseFloat(document.getElementById('custo-m2').value) || 4500,
+        // ── Pedido do Terrenista (novos campos) ──
+        pedido_tipo,
+        pedido_valor_rs: parseFloat(document.getElementById('custo-terreno').value) || 0,  // R$ digitado (cru, sem derivação)
+        pedido_permuta_pct,
+        // ── Premissas ──
         comissao: parseFloat(document.getElementById('comissao').value) || 5,
         impostos: parseFloat(document.getElementById('impostos').value) || 5,
         indiretos: parseFloat(document.getElementById('indiretos').value) || 11,
@@ -1110,14 +1374,46 @@
       };
     }
 
+    // ─────────────────────────────────────────────────────────────────
+    // Helper: cria os params da simulação correspondente ao PEDIDO atual
+    // (a configuração que o terrenista está pedindo).
+    // ─────────────────────────────────────────────────────────────────
+    function paramsDoPedido(p) {
+      if (p.pedido_tipo === 'compra') {
+        return { ...p, mod_terreno: 'compra', custo_terreno: p.pedido_valor_rs, entrada_terreno: 50, parcelas_terreno: 6 };
+      }
+      if (p.pedido_tipo === 'permuta') {
+        return { ...p, mod_terreno: 'permuta', permuta_pct: p.pedido_permuta_pct };
+      }
+      // mista
+      return {
+        ...p, mod_terreno: 'mista',
+        mista_dinheiro: p.pedido_valor_rs,
+        mista_entrada: 50, mista_parcelas: 6,
+        mista_permuta_pct: p.pedido_permuta_pct
+      };
+    }
+
+    // Rótulo curto que descreve o pedido (usado em headers, cards, etc.)
+    function labelDoPedido(p) {
+      if (p.pedido_tipo === 'compra') return 'Compra ' + formatMoney(p.pedido_valor_rs);
+      if (p.pedido_tipo === 'permuta') return 'Permuta ' + p.pedido_permuta_pct + '%';
+      return 'Mista ' + formatMoney(p.pedido_valor_rs) + ' + ' + p.pedido_permuta_pct + '% UH';
+    }
+
     // ============================================================================
     // RENDER FUNCTIONS
     // ============================================================================
 
     function renderSummaryCards() {
       const p = getParams();
-      const r = simulate(p);
+      // Resumo Rápido agora reflete o cenário do PEDIDO atual (não mais Compra 100% fixo)
+      const r = simulate(paramsDoPedido(p));
       const container = document.getElementById('summary-cards');
+
+      // Atualiza o título dinamicamente
+      const titleEl = document.getElementById('resumo-title');
+      if (titleEl) titleEl.textContent = 'Resumo Rápido — ' + labelDoPedido(p);
 
       const cards = [
         { label: 'VGV', value: r.vgvBruto, cls: '', isPercent: false },
@@ -1139,19 +1435,209 @@
       }).join('');
     }
 
+    // ─────────────────────────────────────────────────────────────────
+    // Bloco "Pedido vs Espaço de Negociação"
+    //   3 cards: PEDIDO atual / MÁX APROVADO / MÁX EM ANÁLISE
+    //   Goal-seek baseado no MESMO TIPO do pedido — comparando "laranjas com laranjas".
+    // ─────────────────────────────────────────────────────────────────
+    function renderPedidoVsEspaco() {
+      const p = getParams();
+      const tirFn = r => r.tirFinAA;
+      const tirAlvo = p.tir_alvo / 100;
+      const tirMin = p.tir_min / 100;
+
+      // Simulação do pedido atual
+      const rPedido = simulate(paramsDoPedido(p));
+      const clsTIR = classifyTIR(rPedido.tirFinAA);
+
+      // Goal-seek do mesmo tipo de pedido
+      const maxAprovado = findMaxByType(p, tirAlvo, p.pedido_tipo, tirFn);
+      const maxAnalise  = findMaxByType(p, tirMin,  p.pedido_tipo, tirFn);
+
+      // Folga: comparação pedido vs máximo, na "moeda" do tipo
+      function folgaTexto(maxRes) {
+        if (p.pedido_tipo === 'compra') {
+          const diff = maxRes.valor - p.pedido_valor_rs;
+          if (diff > 0) return `<strong>+${formatMoney(diff)}</strong> de folga vs pedido`;
+          if (diff < 0) return `Pedido excede em <strong>${formatMoney(-diff)}</strong>`;
+          return 'Pedido = limite';
+        }
+        if (p.pedido_tipo === 'permuta') {
+          const diff = maxRes.pct - p.pedido_permuta_pct;
+          if (diff > 0) return `<strong>+${diff.toFixed(1).replace('.', ',')} p.p.</strong> de folga vs pedido`;
+          if (diff < 0) return `Pedido excede em <strong>${(-diff).toFixed(1).replace('.', ',')} p.p.</strong>`;
+          return 'Pedido = limite';
+        }
+        // mista: compara componente em R$ (% fica fixo)
+        const diff = maxRes.valor - p.pedido_valor_rs;
+        if (diff > 0) return `<strong>+${formatMoney(diff)}</strong> em dinheiro (% UH mantido)`;
+        if (diff < 0) return `Pedido excede em <strong>${formatMoney(-diff)}</strong>`;
+        return 'Pedido = limite';
+      }
+
+      const tipoLegenda = {
+        compra: 'em dinheiro à vista',
+        permuta: 'do VGV em unidades',
+        mista: 'em dinheiro + permuta'
+      }[p.pedido_tipo] || '';
+
+      // Card PEDIDO
+      const pedidoCard = `
+        <div class="nego-card pedido">
+          <div class="nego-label">O Pedido</div>
+          <div class="nego-headline">${labelDoPedido(p)}</div>
+          <div class="nego-sublabel">É o que o terrenista pede (${tipoLegenda})</div>
+          <div class="nego-farol ${clsTIR}">${classifyLabel(clsTIR)}</div>
+          <div class="nego-metrics">
+            <div class="nego-metric">
+              <div class="nm-label">TIR c/ Fin</div>
+              <div class="nm-value" style="color:${clsTIR === 'good' ? '#4CAF50' : clsTIR === 'warning' ? '#FF9800' : '#F44336'}">${formatPercent(rPedido.tirFinAA)}</div>
+            </div>
+            <div class="nego-metric">
+              <div class="nm-label">Margem</div>
+              <div class="nm-value">${formatPercent(rPedido.margemEst)}</div>
+            </div>
+          </div>
+          <div class="nego-folga">Meta TIR alvo: <strong>${p.tir_alvo}%</strong> · mínima: <strong>${p.tir_min}%</strong></div>
+        </div>
+      `;
+
+      // Card MÁX APROVADO
+      const aprovadoCard = `
+        <div class="nego-card aprovado">
+          <div class="nego-label">Máximo Aprovado</div>
+          <div class="nego-headline">${formatMaxResult(maxAprovado)}</div>
+          <div class="nego-sublabel">Até onde dá pra ir e ainda bater a meta-alvo</div>
+          <div class="nego-farol good">TIR ≥ ${p.tir_alvo}% a.a.</div>
+          <div class="nego-metrics">
+            <div class="nego-metric">
+              <div class="nm-label">Tipo</div>
+              <div class="nm-value" style="font-size:13px">${p.pedido_tipo === 'compra' ? 'Compra' : p.pedido_tipo === 'permuta' ? 'Permuta' : 'Mista'}</div>
+            </div>
+            <div class="nego-metric">
+              <div class="nm-label">Critério</div>
+              <div class="nm-value" style="font-size:13px">TIR Fin</div>
+            </div>
+          </div>
+          <div class="nego-folga">${folgaTexto(maxAprovado)}</div>
+        </div>
+      `;
+
+      // Card MÁX EM ANÁLISE
+      const analiseCard = `
+        <div class="nego-card analise">
+          <div class="nego-label">Máximo Em Análise</div>
+          <div class="nego-headline">${formatMaxResult(maxAnalise)}</div>
+          <div class="nego-sublabel">Limite absoluto antes de reprovar</div>
+          <div class="nego-farol warning">TIR ≥ ${p.tir_min}% a.a.</div>
+          <div class="nego-metrics">
+            <div class="nego-metric">
+              <div class="nm-label">Tipo</div>
+              <div class="nm-value" style="font-size:13px">${p.pedido_tipo === 'compra' ? 'Compra' : p.pedido_tipo === 'permuta' ? 'Permuta' : 'Mista'}</div>
+            </div>
+            <div class="nego-metric">
+              <div class="nm-label">Critério</div>
+              <div class="nm-value" style="font-size:13px">TIR Fin</div>
+            </div>
+          </div>
+          <div class="nego-folga">${folgaTexto(maxAnalise)}</div>
+        </div>
+      `;
+
+      document.getElementById('negotiation-cards').innerHTML = pedidoCard + aprovadoCard + analiseCard;
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Card "Equivalência R$ ⟷ Permuta"
+    //   Traduz a moeda do pedido para a outra (R$ se permuta, % se compra)
+    //   e sugere uma "contraproposta equivalente" mantendo a mesma TIR.
+    // ─────────────────────────────────────────────────────────────────
+    function renderEquivalencia() {
+      const p = getParams();
+      const tirFn = r => r.tirFinAA;
+      const rPedido = simulate(paramsDoPedido(p));
+      const tirPedido = rPedido.tirFinAA;
+
+      // Equivalência matemática direta (com base no VGV):
+      const area = p.area_vendavel || (p.qtde_uh * p.area_uh);
+      const vgvBruto = area * p.preco_m2;
+
+      let blocos = [];
+
+      if (p.pedido_tipo === 'permuta') {
+        // Quanto vale, em R$ bruto, o % de permuta pedido?
+        const equivRsBruto = vgvBruto * p.pedido_permuta_pct / 100;
+
+        // Contraproposta equivalente em compra à vista — mesma TIR Fin
+        const contraOferta = findMaxByType(p, tirPedido, 'compra', tirFn);
+
+        blocos = [
+          { label: 'O pedido em R$ (VGV bruto)', value: formatMoney(equivRsBruto), hint: `${p.pedido_permuta_pct}% de R$ ${vgvBruto.toLocaleString('pt-BR')}` },
+          { label: 'Compra à vista equivalente', value: formatMoney(contraOferta.valor), hint: `mantém a mesma TIR (${formatPercent(tirPedido)} a.a.)` },
+          { label: 'Diferença (negociação)', value: formatMoney(equivRsBruto - contraOferta.valor), hint: 'R$ que a DOM "economiza" pagando à vista vs entregar UH' },
+        ];
+      } else if (p.pedido_tipo === 'compra') {
+        // Quanto seria em % de permuta, equivalente em R$ bruto?
+        const equivPctBruto = vgvBruto > 0 ? (p.pedido_valor_rs / vgvBruto * 100) : 0;
+
+        // Contraproposta em permuta pura — mesma TIR
+        const contraOferta = findMaxByType(p, tirPedido, 'permuta', tirFn);
+
+        blocos = [
+          { label: 'O pedido em % do VGV', value: equivPctBruto.toFixed(1).replace('.', ',') + '%', hint: `${formatMoney(p.pedido_valor_rs)} sobre R$ ${vgvBruto.toLocaleString('pt-BR')}` },
+          { label: 'Permuta equivalente', value: contraOferta.pct.toFixed(1).replace('.', ',') + '%', hint: `mantém a mesma TIR (${formatPercent(tirPedido)} a.a.)` },
+          { label: 'Diferença (em pp)', value: (equivPctBruto - contraOferta.pct).toFixed(1).replace('.', ',') + ' p.p.', hint: 'pontos percentuais entre o pedido e a permuta equivalente' },
+        ];
+      } else {
+        // Mista: mostra cada componente em VGV bruto e o total
+        const dinPctVGV = vgvBruto > 0 ? (p.pedido_valor_rs / vgvBruto * 100) : 0;
+        const totalPctVGV = dinPctVGV + p.pedido_permuta_pct;
+        const totalRs = p.pedido_valor_rs + (vgvBruto * p.pedido_permuta_pct / 100);
+
+        blocos = [
+          { label: 'Componente em dinheiro', value: formatMoney(p.pedido_valor_rs), hint: `${dinPctVGV.toFixed(1).replace('.', ',')}% do VGV` },
+          { label: 'Componente em permuta', value: p.pedido_permuta_pct + '%', hint: `R$ ${(vgvBruto * p.pedido_permuta_pct / 100).toLocaleString('pt-BR')} (em VGV bruto)` },
+          { label: 'Total ao terrenista', value: formatMoney(totalRs), hint: `${totalPctVGV.toFixed(1).replace('.', ',')}% do VGV bruto` },
+        ];
+      }
+
+      let html = '<div class="equiv-card">';
+      blocos.forEach(b => {
+        html += `<div class="eq-block">
+          <div class="eq-label">${b.label}</div>
+          <div class="eq-value">${b.value}</div>
+          <div class="eq-hint">${b.hint}</div>
+        </div>`;
+      });
+      html += '</div>';
+
+      document.getElementById('equivalencia-cards').innerHTML = html;
+    }
+
     function renderMatrizAquisicao() {
       const p = getParams();
 
+      // Coluna em destaque: o PEDIDO ATUAL do terrenista (sempre 1ª coluna, qualquer que seja o tipo)
+      const pedidoMode = {
+        label: '★ PEDIDO\n' + labelDoPedido(p),
+        mod: p.pedido_tipo,
+        params: paramsDoPedido(p),
+        isPedido: true,
+      };
+
       const modes = [
-        { label: 'Compra 100%', mod: 'compra', params: { ...p, mod_terreno: 'compra', entrada_terreno: 50, parcelas_terreno: 6 } },
+        pedidoMode,
+        { label: 'Compra 100%', mod: 'compra', params: { ...p, mod_terreno: 'compra', custo_terreno: p.pedido_valor_rs || p.custo_terreno, entrada_terreno: 50, parcelas_terreno: 6 } },
         { label: 'Permuta 10%', mod: 'permuta', params: { ...p, mod_terreno: 'permuta', permuta_pct: 10 } },
         { label: 'Permuta 15%', mod: 'permuta', params: { ...p, mod_terreno: 'permuta', permuta_pct: 15 } },
         { label: 'Permuta 20%', mod: 'permuta', params: { ...p, mod_terreno: 'permuta', permuta_pct: 20 } },
-        { label: `Mista (${p.mista_din_pct}%+${p.mista_perm_pct}%)`, mod: 'mista', params: { ...p, mod_terreno: 'mista', mista_dinheiro: p.custo_terreno * p.mista_din_pct / 100, mista_entrada: 50, mista_parcelas: 6, mista_permuta_pct: p.mista_perm_pct } },
+        { label: `Mista (${p.mista_din_pct}%+${p.mista_perm_pct}%)`, mod: 'mista', params: { ...p, mod_terreno: 'mista', mista_dinheiro: (p.pedido_valor_rs || p.custo_terreno) * p.mista_din_pct / 100, mista_entrada: 50, mista_parcelas: 6, mista_permuta_pct: p.mista_perm_pct } },
       ];
 
       const results = modes.map(m => ({
         label: m.label,
+        isPedido: m.isPedido || false,
+        mod: m.mod,
         r: simulate(m.params),
       }));
 
@@ -1170,9 +1656,19 @@
 
       let html = '<thead><tr><th>Métrica</th>';
       results.forEach(res => {
-        html += `<th>${res.label}</th>`;
+        const cls = res.isPedido ? ' class="matriz-pedido-col"' : '';
+        const labelHtml = res.label.replace('\n', '<br>');
+        html += `<th${cls}>${labelHtml}</th>`;
       });
       html += '</tr></thead><tbody>';
+
+      // Helper: aplica classe extra "matriz-pedido-col" na coluna do PEDIDO
+      const pedidoCls = (res, extra) => {
+        const parts = [];
+        if (extra) parts.push(extra);
+        if (res.isPedido) parts.push('matriz-pedido-col');
+        return parts.length ? ` class="${parts.join(' ')}"` : '';
+      };
 
       metrics.forEach(metric => {
         html += `<tr><td style="font-weight: 600;">${metric.label}</td>`;
@@ -1183,7 +1679,7 @@
           if (metric.key === 'margemEst') cssClass = 'cell-' + classifyMargem(value);
           else if (metric.key === 'tirEqAA' || metric.key === 'tirFinAA') cssClass = 'cell-' + classifyTIR(value);
 
-          html += `<td class="${cssClass}">${displayValue}</td>`;
+          html += `<td${pedidoCls(res, cssClass)}>${displayValue}</td>`;
         });
         html += '</tr>';
       });
@@ -1199,7 +1695,7 @@
         const recebeDinheiro = r.custoTerrenoCaixa || 0;
         const recebePermuta = r.permutaVGV || 0;
         const recebeTotal = recebeDinheiro + recebePermuta;
-        html += `<td style="font-weight:700">${formatMoney(recebeTotal)}</td>`;
+        html += `<td${pedidoCls(res)} style="font-weight:700">${formatMoney(recebeTotal)}</td>`;
       });
       html += '</tr>';
 
@@ -1214,7 +1710,7 @@
         else if (din > 0) desc = formatMoney(din) + ' (dinheiro)';
         else if (perm > 0) desc = formatMoney(perm) + ' (unidades)';
         else desc = '-';
-        html += `<td style="font-size:11px">${desc}</td>`;
+        html += `<td${pedidoCls(res)} style="font-size:11px">${desc}</td>`;
       });
       html += '</tr>';
 
@@ -1240,7 +1736,7 @@
           metricaDono = ` · ${pctDin}% din. + ${pctPerm}% UH`;
         }
 
-        html += `<td style="font-weight:600;color:${color}">${sinal}${formatMoney(ganho)} (${sinal}${ganhoPct}%)${metricaDono ? '<br><span style="font-size:10px;color:var(--al)">' + metricaDono + '</span>' : ''}</td>`;
+        html += `<td${pedidoCls(res)} style="font-weight:600;color:${color}">${sinal}${formatMoney(ganho)} (${sinal}${ganhoPct}%)${metricaDono ? '<br><span style="font-size:10px;color:var(--al)">' + metricaDono + '</span>' : ''}</td>`;
       });
       html += '</tr>';
 
@@ -1249,11 +1745,11 @@
       results.forEach((res, idx) => {
         const mod = modes[idx].mod;
         if (mod === 'compra') {
-          html += '<td style="color:var(--gm);font-size:10px">—<br>Recebe à vista</td>';
+          html += `<td${pedidoCls(res)} style="color:var(--gm);font-size:10px">—<br>Recebe à vista</td>`;
         } else {
           const tirDono = calcTIRDono(valorRef, modes[idx], p);
           if (tirDono === null) {
-            html += '<td style="color:var(--gm)">N/A</td>';
+            html += `<td${pedidoCls(res)} style="color:var(--gm)">N/A</td>`;
           } else {
             const pct = tirDono * 100;
             let color = 'var(--wh)';
@@ -1264,7 +1760,7 @@
             else if (pct > 0) { color = '#F44336'; nota = 'Baixo'; }
             else { color = '#F44336'; nota = 'Negativo'; }
             const prazo = Math.round(p.mes_lanc + p.prazo_obra);
-            html += `<td style="font-weight:700;color:${color}">${formatPercent(tirDono)}<br><span style="font-size:10px;color:var(--gm)">${nota} · ${prazo} meses</span></td>`;
+            html += `<td${pedidoCls(res)} style="font-weight:700;color:${color}">${formatPercent(tirDono)}<br><span style="font-size:10px;color:var(--gm)">${nota} · ${prazo} meses</span></td>`;
           }
         }
       });
@@ -1328,8 +1824,22 @@
     // ── Sensibilidade: Permuta (variação do % de permuta) ──
     function renderSensibPermuta() {
       const p = getParams();
-      const permPcts = [5, 8, 10, 12, 15, 18, 20, 25, 30, 35];
-      const permBase = p.mista_perm_pct || 10;
+
+      // Se o pedido for permuta ou mista, centralizar no % do pedido (±10pp em torno).
+      // Caso contrário, manter o range fixo padrão.
+      let permPcts;
+      let permBase;
+      if ((p.pedido_tipo === 'permuta' || p.pedido_tipo === 'mista') && p.pedido_permuta_pct > 0) {
+        permBase = p.pedido_permuta_pct;
+        // Range: pedido ± 10pp, em passos de 2pp, sem ir abaixo de 0 ou acima de 50
+        const candidatos = [-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10]
+          .map(d => +(permBase + d).toFixed(1))
+          .filter(v => v >= 0 && v <= 50);
+        permPcts = Array.from(new Set(candidatos)).sort((a, b) => a - b);
+      } else {
+        permPcts = [5, 8, 10, 12, 15, 18, 20, 25, 30, 35];
+        permBase = p.mista_perm_pct || 10;
+      }
 
       let html = '<thead><tr>';
       html += '<th style="min-width:80px">% Permuta</th>';
@@ -1396,30 +1906,34 @@
       const tirMin = p.tir_min / 100;
 
       const scenarios = [
-        { label: 'Compra', mode: 'compra' },
-        { label: 'Permuta 15%', mode: 'permuta' },
-        { label: `Mista (${p.mista_din_pct}%+${p.mista_perm_pct}%)`, mode: 'mista' },
+        { label: 'Compra', type: 'compra', subtitle: 'Valor máximo em R$ à vista' },
+        { label: 'Permuta', type: 'permuta', subtitle: '% máximo de permuta sobre o VGV' },
+        { label: `Mista (% UH = ${(p.pedido_tipo === 'mista' ? p.pedido_permuta_pct : p.mista_perm_pct)}% fixo)`, type: 'mista', subtitle: 'Componente em R$ máximo, mantendo % fixo' },
       ];
 
       let html = '';
       scenarios.forEach(scenario => {
-        const maxAprovado = findMaxTerreno(p, tirAlvo, scenario.mode, tirFn);
-        const maxAnalise = findMaxTerreno(p, tirMin, scenario.mode, tirFn);
+        const maxAprovado = findMaxByType(p, tirAlvo, scenario.type, tirFn);
+        const maxAnalise  = findMaxByType(p, tirMin,  scenario.type, tirFn);
 
-        const unit = scenario.mode === 'permuta' ? ' (equiv.)' : '';
+        // Marca se é o tipo do pedido atual — destaque visual
+        const ehPedido = scenario.type === p.pedido_tipo;
+        const cardStyle = ehPedido ? 'box-shadow: 0 0 0 2px var(--au); position:relative;' : '';
+        const tag = ehPedido ? '<div style="position:absolute;top:-10px;right:10px;background:var(--au);color:var(--bk);font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;letter-spacing:0.5px">SEU PEDIDO</div>' : '';
 
         html += `
-          <div class="reverse-card">
+          <div class="reverse-card" style="${cardStyle}">
+            ${tag}
             <h4>${scenario.label}</h4>
             <div style="margin:8px 0">
               <div style="font-size:10px;color:#4CAF50;font-weight:700;letter-spacing:0.5px">APROVADO (TIR ≥ ${p.tir_alvo}% a.a.)</div>
-              <div class="value" style="color:#4CAF50">${formatMoney(maxAprovado)}${unit}</div>
+              <div class="value" style="color:#4CAF50">${formatMaxResult(maxAprovado)}</div>
             </div>
             <div style="margin:8px 0">
               <div style="font-size:10px;color:#FF9800;font-weight:700;letter-spacing:0.5px">EM ANÁLISE (TIR ≥ ${p.tir_min}% a.a.)</div>
-              <div class="value" style="color:#FF9800;font-size:16px">${formatMoney(maxAnalise)}${unit}</div>
+              <div class="value" style="color:#FF9800;font-size:16px">${formatMaxResult(maxAnalise)}</div>
             </div>
-            <div class="subtitle">Valor máximo do terreno por faixa de TIR c/ financiamento</div>
+            <div class="subtitle">${scenario.subtitle}</div>
           </div>
         `;
       });
@@ -1433,52 +1947,88 @@
 
       const ranked = terrenos
         .map(t => {
-          const params = { ...p, custo_terreno: t.custo_terreno, qtde_uh: t.qtde_uh, area_uh: t.area_uh, area_vendavel: t.area_vendavel, preco_m2: t.preco_m2, custo_m2: t.custo_m2 };
-          const rCompra = simulate({ ...params, mod_terreno: 'compra', entrada_terreno: 50, parcelas_terreno: 6 });
-          const rPermuta = simulate({ ...params, mod_terreno: 'permuta', permuta_pct: 15 });
-          // Veredicto: o PIOR entre margem e TIR define o resultado
-          const clsMargem = classifyMargem(rCompra.margemEst);
-          const clsTIR = classifyTIR(rCompra.tirFinAA);
+          // Backward-compat: terrenos antigos sem pedido_tipo viram "compra"
+          const tipo = t.pedido_tipo || 'compra';
+          const permPct = t.pedido_permuta_pct || 0;
+          const valorRs = t.custo_terreno || 0;
+
+          // Base: aplica params globais sobrepondo dados do terreno
+          const baseParams = {
+            ...p,
+            qtde_uh: t.qtde_uh, area_uh: t.area_uh, area_vendavel: t.area_vendavel,
+            preco_m2: t.preco_m2, custo_m2: t.custo_m2,
+            pedido_tipo: tipo,
+            pedido_valor_rs: valorRs,
+            pedido_permuta_pct: permPct,
+            // Para compat com código que lê custo_terreno como referência R$
+            custo_terreno: tipo === 'permuta'
+              ? (t.area_vendavel * t.preco_m2 * permPct / 100)
+              : valorRs,
+          };
+
+          // Cenário do PEDIDO real desse terreno
+          const rPedido = simulate(paramsDoPedido(baseParams));
+          // Cenário hipotético "compra à vista" usando o valor R$ de referência
+          const valorCompraEquiv = baseParams.custo_terreno;
+          const rCompra = simulate({ ...baseParams, mod_terreno: 'compra', custo_terreno: valorCompraEquiv, entrada_terreno: 50, parcelas_terreno: 6 });
+
+          // Veredicto: o PIOR entre margem e TIR do PEDIDO real
+          const clsMargem = classifyMargem(rPedido.margemEst);
+          const clsTIR = classifyTIR(rPedido.tirFinAA);
           const worst = (a, b) => {
             const order = { bad: 0, warning: 1, good: 2 };
             return order[a] <= order[b] ? a : b;
           };
           const veredicto = worst(clsMargem, clsTIR);
+
+          // Label curto do pedido (sem custo de função externa para perf)
+          let pedidoLabel;
+          if (tipo === 'compra') pedidoLabel = formatMoney(valorRs);
+          else if (tipo === 'permuta') pedidoLabel = permPct + '% UH';
+          else pedidoLabel = formatMoney(valorRs) + ' + ' + permPct + '% UH';
+
           return {
             nome: t.nome,
-            custo_terreno: t.custo_terreno,
-            vgv: rCompra.vgv,
+            tipo,
+            pedidoLabel,
+            valorRef: valorCompraEquiv,
+            vgv: rPedido.vgv,
+            margemPedido: rPedido.margemEst,
+            tirPedido: rPedido.tirFinAA,
             margemCompra: rCompra.margemEst,
             tirCompra: rCompra.tirFinAA,
-            margemPermuta: rPermuta.margemEst,
-            tirPermuta: rPermuta.tirFinAA,
             veredicto,
-            tirCompraValue: rCompra.tirFinAA,
           };
         })
-        .sort((a, b) => b.tirCompraValue - a.tirCompraValue);
+        .sort((a, b) => b.tirPedido - a.tirPedido);
 
       let html = '<thead><tr>';
-      html += '<th>Terreno</th><th>Valor Pedido</th><th>VGV</th>';
-      html += '<th>Margem Compra</th><th>TIR Compra</th>';
-      html += '<th>Margem Permuta 15%</th><th>TIR Permuta 15%</th>';
+      html += '<th>Terreno</th><th>Pedido</th><th>Valor Ref. (R$)</th><th>VGV</th>';
+      html += '<th>Margem (Pedido)</th><th>TIR (Pedido)</th>';
+      html += '<th>Margem (Compra eq.)</th><th>TIR (Compra eq.)</th>';
       html += '<th>Veredicto</th></tr></thead><tbody>';
 
       ranked.forEach(t => {
         const verdictText = classifyLabel(t.veredicto);
         const verdictColors = { good: '#4CAF50', warning: '#FF9800', bad: '#F44336' };
-        const clsM = classifyMargem(t.margemCompra);
-        const clsT = classifyTIR(t.tirCompra);
-        const clsMP = classifyMargem(t.margemPermuta);
-        const clsTP = classifyTIR(t.tirPermuta);
+        const clsM = classifyMargem(t.margemPedido);
+        const clsT = classifyTIR(t.tirPedido);
+        const clsMC = classifyMargem(t.margemCompra);
+        const clsTC = classifyTIR(t.tirCompra);
+        const tipoBadge = t.tipo === 'permuta'
+          ? '<span style="background:rgba(201,168,76,0.25);color:var(--au);padding:1px 6px;border-radius:3px;font-size:10px">Permuta</span>'
+          : t.tipo === 'mista'
+          ? '<span style="background:rgba(201,168,76,0.25);color:var(--au);padding:1px 6px;border-radius:3px;font-size:10px">Mista</span>'
+          : '<span style="background:rgba(255,255,255,0.08);color:var(--al);padding:1px 6px;border-radius:3px;font-size:10px">Compra</span>';
         html += `<tr>
           <td style="font-weight:600">${t.nome || '(sem nome)'}</td>
-          <td>${formatMoney(t.custo_terreno)}</td>
+          <td>${tipoBadge}<br><span style="font-size:11px">${t.pedidoLabel}</span></td>
+          <td>${formatMoney(t.valorRef)}</td>
           <td>${formatMoney(t.vgv)}</td>
-          <td class="cell-${clsM}">${formatPercent(t.margemCompra)}</td>
-          <td class="cell-${clsT}">${formatPercent(t.tirCompra)}</td>
-          <td class="cell-${clsMP}">${formatPercent(t.margemPermuta)}</td>
-          <td class="cell-${clsTP}">${formatPercent(t.tirPermuta)}</td>
+          <td class="cell-${clsM}">${formatPercent(t.margemPedido)}</td>
+          <td class="cell-${clsT}">${formatPercent(t.tirPedido)}</td>
+          <td class="cell-${clsMC}">${formatPercent(t.margemCompra)}</td>
+          <td class="cell-${clsTC}">${formatPercent(t.tirCompra)}</td>
           <td style="font-weight:700;color:${verdictColors[t.veredicto]};text-align:center">${verdictText}</td>
         </tr>`;
       });
@@ -1506,9 +2056,12 @@
         qtde_uh: parseFloat(document.getElementById('qtde-uh').value) || 0,
         area_uh: parseFloat(document.getElementById('area-uh').value) || 100,
         area_vendavel: parseFloat(document.getElementById('area-vendavel').value) || 5000,
-        custo_terreno: parseFloat(document.getElementById('custo-terreno').value) || 3000000,
+        custo_terreno: parseFloat(document.getElementById('custo-terreno').value) || 0,
         preco_m2: parseFloat(document.getElementById('preco-m2').value) || 9000,
         custo_m2: parseFloat(document.getElementById('custo-m2').value) || 4500,
+        // ── Pedido do Terrenista ──
+        pedido_tipo: document.getElementById('pedido-tipo')?.value || 'compra',
+        pedido_permuta_pct: parseFloat(document.getElementById('pedido-permuta-pct')?.value) || 0,
       };
 
       if (idx >= 0) {
@@ -1546,19 +2099,28 @@
       document.getElementById('qtde-uh').value = terreno.qtde_uh || 0;
       document.getElementById('area-uh').value = terreno.area_uh || 100;
       document.getElementById('area-vendavel').value = terreno.area_vendavel || 5000;
-      document.getElementById('custo-terreno').value = terreno.custo_terreno || 3000000;
+      document.getElementById('custo-terreno').value = terreno.custo_terreno || 0;
       document.getElementById('preco-m2').value = terreno.preco_m2 || 9000;
       document.getElementById('custo-m2').value = terreno.custo_m2 || 4500;
 
+      // Pedido do Terrenista — backward-compat: se ausente, assume 'compra'
+      const tipo = terreno.pedido_tipo || 'compra';
+      document.getElementById('pedido-tipo').value = tipo;
+      document.getElementById('pedido-permuta-pct').value = terreno.pedido_permuta_pct || 15;
+
+      atualizarVisibilidadePedido();
       atualizarUI();
     }
 
     // Terrenos pré-cadastrados (compartilhados via repositório — visíveis para todos)
+    // pedido_tipo: 'compra' | 'permuta' | 'mista'  — descreve a forma como o terrenista está pedindo
+    // pedido_permuta_pct: % do VGV em permuta (relevante se tipo for permuta ou mista)
+    // custo_terreno: R$ (componente em dinheiro do pedido — 0 quando permuta pura)
     const TERRENOS_SEED = [
-      { nome: 'Jd Eldorado',   qtde_uh: 29, area_uh: 107.1, area_vendavel: 3105.9, custo_terreno: 2200000, preco_m2:  9000, custo_m2: 4500 },
-      { nome: 'Jd Eldorado 2', qtde_uh: 31, area_uh: 107.1, area_vendavel: 3320,   custo_terreno: 2200000, preco_m2:  9000, custo_m2: 4500 },
-      { nome: 'Dom José',      qtde_uh: 22, area_uh: 155,   area_vendavel: 3410,   custo_terreno: 4158240, preco_m2:  9000, custo_m2: 4700 },
-      { nome: 'DOM AFONSO',    qtde_uh: 18, area_uh: 155,   area_vendavel: 2790,   custo_terreno: 2500000, preco_m2: 10000, custo_m2: 4500 },
+      { nome: 'Jd Eldorado',   qtde_uh: 29, area_uh: 107.1, area_vendavel: 3105.9, custo_terreno: 2200000, preco_m2:  9000, custo_m2: 4500, pedido_tipo: 'compra',  pedido_permuta_pct: 0  },
+      { nome: 'Jd Eldorado 2', qtde_uh: 31, area_uh: 107.1, area_vendavel: 3320,   custo_terreno: 2200000, preco_m2:  9000, custo_m2: 4500, pedido_tipo: 'compra',  pedido_permuta_pct: 0  },
+      { nome: 'Dom José',      qtde_uh: 22, area_uh: 155,   area_vendavel: 3410,   custo_terreno: 4158240, preco_m2:  9000, custo_m2: 4700, pedido_tipo: 'compra',  pedido_permuta_pct: 0  },
+      { nome: 'DOM AFONSO',    qtde_uh: 18, area_uh: 155,   area_vendavel: 2790,   custo_terreno: 0,       preco_m2: 10000, custo_m2: 4500, pedido_tipo: 'permuta', pedido_permuta_pct: 18 },
     ];
 
     function loadAllTerrenos() {
@@ -1596,12 +2158,50 @@
 
     function atualizarUI() {
       renderSummaryCards();
+      renderPedidoVsEspaco();
       renderMatrizAquisicao();
+      renderEquivalencia();
       renderSensibCompra();
       renderSensibPermuta();
       renderPaymentMatrix();
       renderReverseAnalysis();
       renderRankingTable();
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Mostra/esconde os campos do "Pedido do Terrenista" conforme o tipo
+    // ─────────────────────────────────────────────────────────────────
+    function atualizarVisibilidadePedido() {
+      const tipo = document.getElementById('pedido-tipo')?.value || 'compra';
+      const grpValor = document.getElementById('pedido-valor-group');
+      const grpPerm = document.getElementById('pedido-permuta-group');
+      const labelValor = document.getElementById('pedido-valor-label');
+      const equivInfo = document.getElementById('pedido-equiv-info');
+
+      if (tipo === 'compra') {
+        grpValor.style.display = '';
+        grpPerm.style.display = 'none';
+        if (labelValor) labelValor.textContent = 'Valor pedido (R$)';
+        if (equivInfo) equivInfo.style.display = 'none';
+      } else if (tipo === 'permuta') {
+        grpValor.style.display = 'none';
+        grpPerm.style.display = '';
+        if (equivInfo) {
+          // Mostra equivalente em R$ como info para o usuário
+          const area = parseFloat(document.getElementById('area-vendavel').value) || 0;
+          const preco = parseFloat(document.getElementById('preco-m2').value) || 0;
+          const pct = parseFloat(document.getElementById('pedido-permuta-pct').value) || 0;
+          const equiv = area * preco * pct / 100;
+          equivInfo.textContent = '≈ ' + formatMoney(equiv) + ' em VGV bruto entregue ao terrenista';
+          equivInfo.style.display = '';
+        }
+      } else {
+        // mista
+        grpValor.style.display = '';
+        grpPerm.style.display = '';
+        if (labelValor) labelValor.textContent = 'Componente em dinheiro (R$)';
+        if (equivInfo) equivInfo.style.display = 'none';
+      }
     }
 
     // ============================================================================
@@ -1614,6 +2214,7 @@
       const inputIds = [
         'qtde-uh', 'area-uh', 'area-vendavel',
         'custo-terreno', 'preco-m2', 'custo-m2',
+        'pedido-permuta-pct',
         'comissao', 'impostos', 'indiretos',
         'mes-lanc', 'prazo-obra', 'prazo-vendas', 'pct-4m',
         'pre-lanc-meses', 'pre-lanc-pct',
@@ -1633,10 +2234,18 @@
             document.getElementById('area-vendavel').value = calculated.toFixed(0);
           }
 
+          atualizarVisibilidadePedido();
           atualizarUI();
         });
       });
 
+      // Listener específico para o seletor de tipo de pedido
+      document.getElementById('pedido-tipo').addEventListener('change', () => {
+        atualizarVisibilidadePedido();
+        atualizarUI();
+      });
+
+      atualizarVisibilidadePedido();
       atualizarUI();
     });
   </script>
