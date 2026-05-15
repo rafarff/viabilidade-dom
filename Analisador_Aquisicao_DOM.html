@@ -1553,9 +1553,12 @@
       atualizarUI();
     }
 
-    // Terrenos pré-cadastrados (exemplo)
+    // Terrenos pré-cadastrados (compartilhados via repositório — visíveis para todos)
     const TERRENOS_SEED = [
-      { nome: 'Jd Eldorado', qtde_uh: 29, area_uh: 107.1, area_vendavel: 3105.9, custo_terreno: 2200000, preco_m2: 9000, custo_m2: 4500 },
+      { nome: 'Jd Eldorado',   qtde_uh: 29, area_uh: 107.1, area_vendavel: 3105.9, custo_terreno: 2200000, preco_m2:  9000, custo_m2: 4500 },
+      { nome: 'Jd Eldorado 2', qtde_uh: 31, area_uh: 107.1, area_vendavel: 3320,   custo_terreno: 2200000, preco_m2:  9000, custo_m2: 4500 },
+      { nome: 'Dom José',      qtde_uh: 22, area_uh: 155,   area_vendavel: 3410,   custo_terreno: 4158240, preco_m2:  9000, custo_m2: 4700 },
+      { nome: 'DOM AFONSO',    qtde_uh: 18, area_uh: 155,   area_vendavel: 2790,   custo_terreno: 2500000, preco_m2: 10000, custo_m2: 4500 },
     ];
 
     function loadAllTerrenos() {
